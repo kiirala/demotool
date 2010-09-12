@@ -8,6 +8,10 @@ public:
   ModuleLoader(DataStorage &ds);
   ~ModuleLoader();
 
+  void* load(const char* filename);
+  void* get(void* lib, const char* name);
+  void unload(void* lib);
+
 private:
   DataStorage &data;
 

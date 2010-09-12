@@ -2,20 +2,25 @@
 #define DEMOTOOL_GUI_H
 
 class ModuleLoader;
-class Scheduler;
 class Window;
 
 class Gui {
 public:
-  Gui(ModuleLoader &ml, Scheduler &s);
+  Gui(ModuleLoader &ml);
 
   void run();
 
 private:
-  ModuleLoader &loader;
-  Scheduler &scheduler;
-  Window &win;
+  void on_reload();
+  void on_resize();
+  void on_redraw();
+  void load_libs();
 
+  ModuleLoader &loader;
+  Window &win;
+  void *renderer_lib;
+  void (*render)(double time);
+  void (*resize)(int width, int height);
 };
 
 /*
