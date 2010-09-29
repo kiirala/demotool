@@ -52,6 +52,10 @@ public:
     signal_reload.emit();
   }
 
+  void on_ready() {
+    printf("Ready!\n");
+  }
+
   Window(ModuleLoader &ml)
     : loader(ml), time(0.0, 0.0, 120.0, 1.0/60, 1.0, 0.0), time_w(time),
       next_frame(">"), prev_frame("<"), reload("Reload")
@@ -102,6 +106,7 @@ public:
     vsplit.show();
     show();
     draw_area.signal_size_allocate().connect_notify(sigc::mem_fun(*this, &Window::on_draw_resize));
+    //draw_area.signal_show().connect(sigc::mem_fun(*this, &Window::on_ready));
   }
 
   GdkGLContext *gl_context() {
@@ -115,9 +120,8 @@ public:
 };
 
 Gui::Gui(ModuleLoader &ml)
-  : loader(ml), win(*(new Window(ml)))
+  : loader(ml), win(*(new Window(ml))), render(0), resize(0)
 {
-  load_libs();
   win.signal_reload.connect(sigc::mem_fun(*this, &Gui::on_reload));
   win.signal_resize.connect(sigc::mem_fun(*this, &Gui::on_resize));
   win.signal_redraw.connect(sigc::mem_fun(*this, &Gui::on_redraw));
@@ -130,15 +134,17 @@ void Gui::on_reload() {
   if (status < 0 || WEXITSTATUS(status) != 0)
     return;
   loader.unload(renderer_lib);
+  resize = 0;
+  render = 0;
   load_libs();
-  on_resize();
 }
 
 void Gui::on_resize() {
   if (!gdk_gl_drawable_gl_begin(win.gl_drawable(), win.gl_context()))
     g_assert_not_reached ();
-  
-  resize(win.draw_area.get_width(), win.draw_area.get_height());
+
+  if (resize)
+    resize(win.draw_area.get_width(), win.draw_area.get_height());
 
   gdk_gl_drawable_gl_end(win.gl_drawable());
   on_redraw();
@@ -147,6 +153,9 @@ void Gui::on_resize() {
 void Gui::on_redraw() {
   GdkGLContext *gl_context = win.gl_context();
   GdkGLDrawable *gl_drawable = win.gl_drawable();
+
+  if (!render)
+    load_libs();
 
   if (!gdk_gl_drawable_gl_begin(gl_drawable, gl_context))
     g_assert_not_reached ();
@@ -166,6 +175,7 @@ void Gui::load_libs() {
   render = (void (*)(double))loader.get(renderer, "render");
   resize = (void (*)(int, int))loader.get(renderer, "resize");
   renderer_lib = renderer;
+  on_resize();
 }
 
 void Gui::run() {

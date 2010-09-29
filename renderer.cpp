@@ -1,5 +1,10 @@
-#include <GL/gl.h>
+#include <stdio.h>
+#include <GL/glew.h>
 
+#include "superformula.h"
+
+extern "C" void load();
+extern "C" void unload();
 extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
@@ -15,15 +20,39 @@ float boxv[][3] = {
 };
 #define ALPHA 90.0
 
+Superformula *sf;
+
+void load() {
+  sf = 0;
+
+  GLenum err = glewInit();
+  if (GLEW_OK != err) {
+    /* Problem: glewInit failed, something is seriously wrong. */
+    fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+  }
+  fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+}
+
+void unload() {
+  delete sf;
+}
+
 void render(double time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPushMatrix();
 	
   glRotatef (time * ALPHA, 1, 0, 1);
+  glScalef(0.3, 0.3, 0.3);
   // glRotatef (ang, 0, 1, 0);
   // glRotatef (ang, 0, 0, 1);
 
+  if (!sf) sf = new Superformula();
+
+  sf->render();
+
   glShadeModel(GL_FLAT);
+  glDisable(GL_DEPTH_TEST);
+  glUseProgram(0);
 
   glBegin (GL_LINES);
   glColor3f (1., 0., 0.);
@@ -43,6 +72,7 @@ void render(double time) {
   glVertex3f (0., 0., 1.);
   glEnd ();
 
+  /*
   glBegin(GL_LINES);
   glColor3f (1., 1., 1.);
   glVertex3fv(boxv[0]);
@@ -81,7 +111,7 @@ void render(double time) {
   glVertex3fv(boxv[3]);
   glVertex3fv(boxv[7]);
   glEnd();
-
+  */
   glPopMatrix ();
 }
 
