@@ -12,6 +12,7 @@ public:
 
 private:
   void on_reload();
+  bool on_build();
   void on_resize();
   void on_redraw();
   void load_libs();

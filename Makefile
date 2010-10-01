@@ -1,5 +1,5 @@
-GENERAL=-Os -g -march=native -Wall -Wextra
-CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0` $(GENERAL) -MMD -MP
+GENERAL=-Os -g -march=native -Wall -Wextra -std=c++0x
+CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0` -I. $(GENERAL) -MMD -MP
 LDFLAGS=`pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(GENERAL)
 
 OBJECTS=main.o datastorage.o moduleloader.o gui.o

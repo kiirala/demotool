@@ -20,9 +20,10 @@ public:
   Gtk::Adjustment time;
   Gtk::HScale time_w;
   Gtk::HBox toolbox_buttons;
-  Gtk::Button next_frame, prev_frame, reload;
+  Gtk::Button next_frame, prev_frame, reload, rebuild;
 
   sigc::signal<void> signal_reload, signal_resize, signal_redraw;
+  sigc::signal<bool> signal_build;
 
   void on_quit() {
     running = false;
@@ -52,13 +53,18 @@ public:
     signal_reload.emit();
   }
 
+  void on_rebuild() {
+    if (signal_build.emit())
+      signal_reload.emit();
+  }
+
   void on_ready() {
     printf("Ready!\n");
   }
 
   Window(ModuleLoader &ml)
     : loader(ml), time(0.0, 0.0, 120.0, 1.0/60, 1.0, 0.0), time_w(time),
-      next_frame(">"), prev_frame("<"), reload("Reload")
+      next_frame(">"), prev_frame("<"), reload("Reload"), rebuild("Rebuild")
   {
     set_border_width(10);
     set_title("Demotool");
@@ -93,6 +99,10 @@ public:
     reload.show();
     toolbox_buttons.pack_end(reload, false, true);
 
+    rebuild.signal_clicked().connect(sigc::mem_fun(*this, &Window::on_rebuild));
+    rebuild.show();
+    toolbox_buttons.pack_end(rebuild, false, true);
+
     toolbox_buttons.show();
     toolbox.pack_end(toolbox_buttons, true, true);
     toolbox.show();
@@ -123,16 +133,21 @@ Gui::Gui(ModuleLoader &ml)
   : loader(ml), win(*(new Window(ml))), render(0), resize(0)
 {
   win.signal_reload.connect(sigc::mem_fun(*this, &Gui::on_reload));
+  win.signal_build.connect(sigc::mem_fun(*this, &Gui::on_build));
   win.signal_resize.connect(sigc::mem_fun(*this, &Gui::on_resize));
   win.signal_redraw.connect(sigc::mem_fun(*this, &Gui::on_redraw));
   on_resize();
   running = true;
 }
 
-void Gui::on_reload() {
+bool Gui::on_build() {
   int status = system("make");
   if (status < 0 || WEXITSTATUS(status) != 0)
-    return;
+    return false;
+  return true;
+}
+
+void Gui::on_reload() {
   loader.unload(renderer_lib);
   resize = 0;
   render = 0;
@@ -171,7 +186,7 @@ void Gui::on_redraw() {
 }
 
 void Gui::load_libs() {
-  void* renderer = loader.load("renderer.so");
+  void* renderer = loader.load("./renderer.so");
   render = (void (*)(double))loader.get(renderer, "render");
   resize = (void (*)(int, int))loader.get(renderer, "resize");
   renderer_lib = renderer;

@@ -48,7 +48,7 @@ void render(double time) {
 
   if (!sf) sf = new Superformula();
 
-  sf->render();
+  sf->render(time);
 
   glShadeModel(GL_FLAT);
   glDisable(GL_DEPTH_TEST);
