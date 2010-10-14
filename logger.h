@@ -1,14 +1,15 @@
 #ifndef TT_LOGGER_H
 #define TT_LOGGER_H
 
-#define debug(str) Logger::message(__FILE__, __LINE__, 1, (str))
-#define warn(str) Logger::message(__FILE__, __LINE__, 5, (str))
-#define error(str) Logger::message(__FILE__, __LINE__, 9, (str))
+#define debug(...) Logger::message(__FILE__, __LINE__, 1, __VA_ARGS__)
+#define warn(...) Logger::message(__FILE__, __LINE__, 5, __VA_ARGS__)
+#define error(...) Logger::message(__FILE__, __LINE__, 9, __VA_ARGS__)
 
 class Logger {
 public:
   static void message(char const *fname, int const line, int const level,
-		      char const *message);
+		      char const *message, ...)
+    __attribute__((format(printf, 4, 5)));
 private:
 
 };

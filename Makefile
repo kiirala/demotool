@@ -5,7 +5,7 @@ LDFLAGS=`pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(GENERAL)
 OBJECTS=main.o datastorage.o moduleloader.o gui.o
 PROGRAM=main
 DYNOBJ=renderer.so
-DYNREQS=renderer.o superformula.o mesh.o matrix.o logger.o globject.o sflights.o
+DYNREQS=renderer.o superformula.o mesh.o matrix.o logger.o globject.o texturepreview.o
 
 all: $(PROGRAM) $(DYNOBJ)
 

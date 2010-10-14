@@ -1,6 +1,7 @@
 #include <vector>
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 #include <GL/gl.h>
 
 #include "mesh.h"
@@ -9,13 +10,15 @@
 #include "logger.h"
 
 Mesh::Mesh()
-  : type(TRIANGLES), vertices(), v_array(0)
+  : type(TRIANGLES), vertices(), v_array(0), n_array(0), texcoord_array(0)
 {
   colour.set(0.0, 0.0, 0.0);
 }
 
 Mesh::~Mesh() {
   delete [] v_array;
+  delete [] n_array;
+  delete [] texcoord_array;
 }
 
 void Mesh::render() const {
@@ -59,7 +62,7 @@ int Mesh::vertexCount() {
   return vertices.size();
 }
 
-GLfloat *Mesh::vertexArray() {
+GLfloat* Mesh::vertexArray() {
   if (!v_array) v_array = new GLfloat[vertexCount() * 3];
 
   int a_pos = 0;
@@ -71,6 +74,62 @@ GLfloat *Mesh::vertexArray() {
     a_pos += 3;
   }
   return v_array;
+}
+
+GLfloat* Mesh::normalArray() {
+  if (!n_array) n_array = new GLfloat[vertexCount() * 3];
+
+  int a_pos = 0;
+  for (std::vector<Vertex>::iterator i = vertices.begin() ;
+       i != vertices.end() ; i++) {
+    n_array[a_pos] = (*i).normal.x;
+    n_array[a_pos + 1] = (*i).normal.y;
+    n_array[a_pos + 2] = (*i).normal.z;
+    a_pos += 3;
+  }
+  return n_array;
+}
+
+GLfloat* Mesh::texcoordArray() {
+  if (!texcoord_array) {
+    if (texcoords.size() == 0)
+      return 0;
+    assert(texcoords.size() == vertices.size());
+    texcoord_array = new GLfloat[vertexCount() * 2];
+  }
+
+  int a_pos = 0;
+  for (std::vector<Point>::iterator i = texcoords.begin() ;
+       i != texcoords.end() ; i++) {
+    texcoord_array[a_pos] = (*i).x;
+    texcoord_array[a_pos + 1] = (*i).y;
+    a_pos += 2;
+  }
+  return texcoord_array;
+}
+
+Mesh Mesh::createSquare() {
+  Mesh m;
+  m.type = TRIANGLES;
+  m.vertices.reserve(6);
+  m.texcoords.reserve(6);
+
+  Point normal(0, 0, 1);
+  m.vertices.push_back(Vertex(Point(0, 0), normal));
+  m.texcoords.push_back(Point(0, 0));
+  m.vertices.push_back(Vertex(Point(0, 1), normal));
+  m.texcoords.push_back(Point(0, 1));
+  m.vertices.push_back(Vertex(Point(1, 0), normal));
+  m.texcoords.push_back(Point(1, 0));
+
+  m.vertices.push_back(Vertex(Point(1, 0), normal));
+  m.texcoords.push_back(Point(1, 0));
+  m.vertices.push_back(Vertex(Point(0, 1), normal));
+  m.texcoords.push_back(Point(0, 1));
+  m.vertices.push_back(Vertex(Point(1, 1), normal));
+  m.texcoords.push_back(Point(1, 1));
+
+  return m;
 }
 
 /**
@@ -165,6 +224,21 @@ Mesh Mesh::createCone(double const length, double const radius1,
   return m;
 }
 
+static bool singularity(Point const &a) {
+  if (a.y == -M_PI / 2.0 || a.y == M_PI / 2.0)
+    return true;
+  return false;
+}
+static Point tc_mid(Point const &a, Point const &b) {
+  double mid_x = (a.x + b.x) / 2.0;
+  double mid_y = (a.y + b.y) / 2.0;
+  if (singularity(a))
+    mid_x = b.x;
+  else if (singularity(b))
+    mid_x = a.x;
+  return Point(mid_x, mid_y);
+}
+
 Mesh Mesh::createBall(double const radius, int const subdivisions) {
   Mesh m;
   m.type = TRIANGLES;
@@ -175,6 +249,11 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
 
   if (subdivisions == 0) {
     double length = radius / sqrt(2);
+    Point tc_a(0.0, M_PI / 2.0);
+    Point tc_b(-M_PI, 0.0);
+    Point tc_c(-M_PI / 2, 0.0);
+    Point step(M_PI / 2, 0.0);
+
     for (int i = 0 ; i < 4 ; i++) {
       Point a(0.0, radius, 0.0);
       Point b((i == 0 || i == 3) ? -length : length, 0.0,
@@ -185,12 +264,20 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
 
       Vertex va = Vertex(a, normal);
       m.vertices.push_back(va);
+      m.texcoords.push_back(tc_a);
       Vertex vb = Vertex(b, normal);
       m.vertices.push_back(vb);
+      m.texcoords.push_back(tc_b);
       Vertex vc = Vertex(c, normal);
       m.vertices.push_back(vc);
+      m.texcoords.push_back(tc_c);
+      tc_b += step;
+      tc_c += step;
     }
 
+    tc_a.y = -M_PI / 2.0;
+    tc_b.x = -M_PI / 2.0;
+    tc_c.x = -M_PI;
     for (int i = 0 ; i < 4 ; i++) {
       Point a(0.0, -radius, 0.0);
       Point b((i <= 1) ? length : -length, 0.0,
@@ -203,39 +290,72 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
 
       Vertex va = Vertex(a, normal);
       m.vertices.push_back(va);
+      m.texcoords.push_back(tc_a);
       Vertex vb = Vertex(b, normal);
       m.vertices.push_back(vb);
+      m.texcoords.push_back(tc_b);
       Vertex vc = Vertex(c, normal);
       m.vertices.push_back(vc);
+      m.texcoords.push_back(tc_c);
+      tc_b += step;
+      tc_c += step;
     }
   }
   else {
     Mesh prev = createBall(radius, subdivisions - 1);
     std::vector<Vertex>::const_iterator i = prev.vertices.begin();
+    std::vector<Point>::const_iterator tc = prev.texcoords.begin();
     while (i != prev.vertices.end()) {
       Vertex a = *i; ++i;
       Vertex b = *i; ++i;
       Vertex c = *i; ++i;
+      Point tc_a = *tc; ++tc;
+      Point tc_b = *tc; ++tc;
+      Point tc_c = *tc; ++tc;
 
-      Point mid_ab = ((a.loc + b.loc) * 0.5).at_length(radius);
-      Point mid_ac = ((a.loc + c.loc) * 0.5).at_length(radius);
-      Point mid_bc = ((b.loc + c.loc) * 0.5).at_length(radius);
+      Point mid_ab = ((a.loc + b.loc) / 2.0).at_length(radius);
+      Point mid_ac = ((a.loc + c.loc) / 2.0).at_length(radius);
+      Point mid_bc = ((b.loc + c.loc) / 2.0).at_length(radius);
+
+      Point tc_ab = tc_mid(tc_a, tc_b);
+      Point tc_ac = tc_mid(tc_a, tc_c);
+      Point tc_bc = tc_mid(tc_b, tc_c);
+      if (singularity(tc_a)) tc_a.x = tc_bc.x;
+      if (singularity(tc_b)) tc_b.x = tc_ac.x;
+      if (singularity(tc_c)) tc_c.x = tc_ab.x;
+
+      debug("ac diff: %.4f %4f %4f",
+	    cos(tc_ac.x) * cos(tc_ac.y) - mid_ac.x,
+	    sin(tc_ac.x) * cos(tc_ac.y) - mid_ac.z,
+	    sin(tc_ac.y) - mid_ac.y);
 
       m.vertices.push_back(Vertex(a.loc, a.loc.at_length(1)));
       m.vertices.push_back(Vertex(mid_ab, mid_ab.at_length(1)));
       m.vertices.push_back(Vertex(mid_ac, mid_ac.at_length(1)));
+      m.texcoords.push_back(tc_a);
+      m.texcoords.push_back(tc_ab);
+      m.texcoords.push_back(tc_ac);
 
       m.vertices.push_back(Vertex(mid_ab, mid_ab.at_length(1)));
       m.vertices.push_back(Vertex(b.loc, b.loc.at_length(1)));
       m.vertices.push_back(Vertex(mid_bc, mid_bc.at_length(1)));
+      m.texcoords.push_back(tc_ab);
+      m.texcoords.push_back(tc_b);
+      m.texcoords.push_back(tc_bc);
 
       m.vertices.push_back(Vertex(mid_ab, mid_ab.at_length(1)));
       m.vertices.push_back(Vertex(mid_bc, mid_bc.at_length(1)));
       m.vertices.push_back(Vertex(mid_ac, mid_ac.at_length(1)));
+      m.texcoords.push_back(tc_ab);
+      m.texcoords.push_back(tc_bc);
+      m.texcoords.push_back(tc_ac);
 
       m.vertices.push_back(Vertex(mid_ac, mid_ac.at_length(1)));
       m.vertices.push_back(Vertex(mid_bc, mid_bc.at_length(1)));
       m.vertices.push_back(Vertex(c.loc, c.loc.at_length(1)));
+      m.texcoords.push_back(tc_ac);
+      m.texcoords.push_back(tc_bc);
+      m.texcoords.push_back(tc_c);
     }
   }
 

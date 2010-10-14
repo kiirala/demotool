@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 
 #include "superformula.h"
-#include "sflights.h"
+#include "texturepreview.h"
 
 extern "C" void load();
 extern "C" void unload();
@@ -12,7 +12,9 @@ extern "C" void resize(int width, int height);
 #define ALPHA 90.0
 
 Superformula *sf;
+SfTexture *sft;
 SfLights *sfl;
+TexturePreview *prev;
 GLuint *texture;
 const int texture_count = 1;
 GLuint fbo;
@@ -33,7 +35,9 @@ void load() {
   fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
   sf = new Superformula();
+  sft = new SfTexture();
   sfl = new SfLights();
+  prev = new TexturePreview();
 
   texture = new GLuint[texture_count];
   glGenTextures(texture_count, texture);
@@ -42,14 +46,14 @@ void load() {
     glTexParameterf(GL_TEXTURE_2D,
 		    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D,
-		    GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		    GL_TEXTURE_MIN_FILTER, GL_LINEAR/*_MIPMAP_LINEAR*/);
     glTexParameterf(GL_TEXTURE_2D,
-		    GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		    GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D,
-		    GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,
-		    GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0,
+		    GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D,
+    //		    GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 512, 512, 0,
 		 GL_RGBA, GL_UNSIGNED_BYTE, 0);
   }
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -70,6 +74,7 @@ void load() {
 
 void unload() {
   delete sf;
+  delete sft;
   delete sfl;
   glDeleteFramebuffers(1, &fbo);
   glDeleteTextures(texture_count, texture);
@@ -77,10 +82,10 @@ void unload() {
 }
 
 static void selectRenderTexture(int num) {
-  if (num >= 0 && num < texture_count) {
+  if (num > 0 && num <= texture_count) {
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-			   GL_TEXTURE_2D, texture[num], 0);
+			   GL_TEXTURE_2D, texture[num - 1], 0);
     glViewport(0, 0, 512, 512);
   }
   else {
@@ -101,11 +106,20 @@ void render(double time) {
   //if (!sf) sf = new Superformula();
   //if (!sfl) sfl = new SfLights();
 
+  selectRenderTexture(1);
+  sft->scale = 1.0;
+  sft->render(time);
+  selectRenderTexture(0);
+  sft->scale = 0.25;
+  sft->render(time);
+  sf->heightfield = texture[0];
   sf->render(time);
+  sfl->heightfield = texture[0];
   sfl->render(time);
 
   glShadeModel(GL_FLAT);
   glDisable(GL_DEPTH_TEST);
+  glDisable(GL_TEXTURE_2D);
   glUseProgram(0);
 
   glBegin (GL_LINES);
@@ -127,6 +141,11 @@ void render(double time) {
   glEnd ();
 
   glPopMatrix ();
+
+  prev->texture = texture[0];
+  prev->scale = 0.25;
+  prev->size = 1.0;
+  prev->render(time);
 }
 
 void resize(int width, int height) {

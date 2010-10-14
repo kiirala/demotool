@@ -21,9 +21,7 @@ struct Colour {
 struct Point {
   double x, y, z;
 
-  Point()
-    : x(0.0), y(0.0), z(0.0) { }
-  Point(double const x, double const y, double const z)
+  Point(double const x = 0.0, double const y = 0.0, double const z = 0.0)
     : x(x), y(y), z(z) { }
 
   double length() const {
@@ -43,24 +41,39 @@ struct Point {
     this->z = z;
   }
 
-  const Point operator- (Point const &other) const {
-    Point res;
-    res.x = x - other.x;
-    res.y = y - other.y;
-    res.z = z - other.z;
-    return res;
+  Point& operator+=(Point const &other) {
+    x = x + other.x;
+    y = y + other.y;
+    z = z + other.z;
+    return *this;
+  }
+
+  Point& operator-=(Point const &other) {
+    x = x - other.x;
+    y = y - other.y;
+    z = z - other.z;
+    return *this;
   }
 
   const Point operator+ (Point const &other) const {
-    Point res;
-    res.x = x + other.x;
-    res.y = y + other.y;
-    res.z = z + other.z;
+    Point res = *this;
+    res += other;
+    return res;
+  }
+
+  const Point operator- (Point const &other) const {
+    Point res = *this;
+    res -= other;
     return res;
   }
 
   const Point operator* (double const f) const {
     Point res(x * f, y * f, z * f);
+    return res;
+  }
+
+  const Point operator/ (double const f) const {
+    Point res(x / f, y / f, z / f);
     return res;
   }
 
