@@ -2,28 +2,28 @@
 #include <GL/glew.h>
 
 #include "superformula.h"
+#include "sflights.h"
 
 extern "C" void load();
 extern "C" void unload();
 extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
-float boxv[][3] = {
-	{ -0.5, -0.5, -0.5 },
-	{  0.5, -0.5, -0.5 },
-	{  0.5,  0.5, -0.5 },
-	{ -0.5,  0.5, -0.5 },
-	{ -0.5, -0.5,  0.5 },
-	{  0.5, -0.5,  0.5 },
-	{  0.5,  0.5,  0.5 },
-	{ -0.5,  0.5,  0.5 }
-};
 #define ALPHA 90.0
 
 Superformula *sf;
+SfLights *sfl;
+GLuint *texture;
+const int texture_count = 1;
+GLuint fbo;
+int viewport[4];
+
+static void defaultViewport() {
+  glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+}
 
 void load() {
-  sf = 0;
+  //sf = 0;
 
   GLenum err = glewInit();
   if (GLEW_OK != err) {
@@ -31,24 +31,78 @@ void load() {
     fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
   }
   fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+
+  sf = new Superformula();
+  sfl = new SfLights();
+
+  texture = new GLuint[texture_count];
+  glGenTextures(texture_count, texture);
+  for (int i = 0 ; i < texture_count ; ++i) {
+    glBindTexture(GL_TEXTURE_2D, texture[i]);
+    glTexParameterf(GL_TEXTURE_2D,
+		    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D,
+		    GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D,
+		    GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D,
+		    GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,
+		    GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0,
+		 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+			 GL_TEXTURE_2D, texture[0], 0);
+
+  GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+    printf("FBO not fully initialized\n");
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
 }
 
 void unload() {
   delete sf;
+  delete sfl;
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteTextures(texture_count, texture);
+  delete [] texture;
+}
+
+static void selectRenderTexture(int num) {
+  if (num >= 0 && num < texture_count) {
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+			   GL_TEXTURE_2D, texture[num], 0);
+    glViewport(0, 0, 512, 512);
+  }
+  else {
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    defaultViewport();
+  }
 }
 
 void render(double time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPushMatrix();
-	
+
   glRotatef (time * ALPHA, 1, 0, 1);
   glScalef(0.3, 0.3, 0.3);
   // glRotatef (ang, 0, 1, 0);
   // glRotatef (ang, 0, 0, 1);
 
-  if (!sf) sf = new Superformula();
+  //if (!sf) sf = new Superformula();
+  //if (!sfl) sfl = new SfLights();
 
   sf->render(time);
+  sfl->render(time);
 
   glShadeModel(GL_FLAT);
   glDisable(GL_DEPTH_TEST);
@@ -72,46 +126,6 @@ void render(double time) {
   glVertex3f (0., 0., 1.);
   glEnd ();
 
-  /*
-  glBegin(GL_LINES);
-  glColor3f (1., 1., 1.);
-  glVertex3fv(boxv[0]);
-  glVertex3fv(boxv[1]);
-	
-  glVertex3fv(boxv[1]);
-  glVertex3fv(boxv[2]);
-	
-  glVertex3fv(boxv[2]);
-  glVertex3fv(boxv[3]);
-	
-  glVertex3fv(boxv[3]);
-  glVertex3fv(boxv[0]);
-	
-  glVertex3fv(boxv[4]);
-  glVertex3fv(boxv[5]);
-	
-  glVertex3fv(boxv[5]);
-  glVertex3fv(boxv[6]);
-	
-  glVertex3fv(boxv[6]);
-  glVertex3fv(boxv[7]);
-	
-  glVertex3fv(boxv[7]);
-  glVertex3fv(boxv[4]);
-	
-  glVertex3fv(boxv[0]);
-  glVertex3fv(boxv[4]);
-	
-  glVertex3fv(boxv[1]);
-  glVertex3fv(boxv[5]);
-	
-  glVertex3fv(boxv[2]);
-  glVertex3fv(boxv[6]);
-	
-  glVertex3fv(boxv[3]);
-  glVertex3fv(boxv[7]);
-  glEnd();
-  */
   glPopMatrix ();
 }
 
@@ -129,15 +143,17 @@ void resize(int width, int height) {
     used_h = width * aspectratio_h / aspectratio_w;
   }
 
-  glViewport ((width - used_w) / 2, (height - used_h) / 2, used_w, used_h);
-  
+  viewport[0] = (width - used_w) / 2;
+  viewport[1] = (height - used_h) / 2;
+  viewport[2] = used_w;
+  viewport[3] = used_h;
+  defaultViewport();
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho (-aspectratio_w, aspectratio_w,
 	   -aspectratio_h, aspectratio_h,
 	   -20050, 10000);
-  glEnable (GL_BLEND);
-  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glMatrixMode(GL_MODELVIEW);
   
   glLoadIdentity();

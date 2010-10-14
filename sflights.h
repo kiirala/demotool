@@ -1,13 +1,12 @@
-#ifndef DEMOTOOL_SUPERFORMULA_H
-#define DEMOTOOL_SUPERFORMULA_H
+#ifndef DEMOTOOL_SFLIGHTS_H
+#define DEMOTOOL_SFLIGHTS_H
 
 #include "mesh.h"
 #include "globject.h"
 
-class Superformula : public GLObject {
+class SfLights : public GLObject {
 public:
-  Superformula();
-  ~Superformula();
+  SfLights();
 
   void render(double time);
 
@@ -16,7 +15,7 @@ public:
   double r2[6];
 
 private:
-
+  GLuint texture, fbo;
 };
 
 
@@ -25,4 +24,4 @@ Local Variables:
 mode:c++
 End:
 */
-#endif /* DEMOTOOL_SUPERFORMULA_H */
+#endif /* DEMOTOOL_SFLIGHTS_H */

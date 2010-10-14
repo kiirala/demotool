@@ -1,9 +1,7 @@
-#include <cstdio>
-#include <string>
-#include <unordered_map>
 #include <GL/glew.h>
 
 #include "superformula.h"
+#include "globject.h"
 #include "mesh.h"
 #include "logger.h"
 
@@ -61,7 +59,7 @@ static const char *fragment_shader =
 "in  vec2 polarCoord;\n"
 "in  vec3 normal;\n"
 "in  vec3 worldPos;\n"
-"out vec4 gl_FragColor;\n"
+"out vec4 FragColor;\n"
 
 "void main(void) {\n"
 "        vec3 N = normalize(normal);"
@@ -78,68 +76,18 @@ static const char *fragment_shader =
 "        vec3 specular = vec3(scale) * pow(max(dot(R, L), 0.0), shininess);"
 
   //"        gl_FragColor = vec4((N + vec3(0.5)) / 2, 1.0);"
-"        gl_FragColor = vec4(ambient + diffuse + specular, 1.0);"
+"        FragColor = vec4(ambient + diffuse + specular, 1.0);"
 "}\n"
 ;
 
-static void printInfoLog(GLhandleARB h) {
-  int infologLength = 0;
-  int charsWritten  = 0;
-  char *infoLog;
-  
-  glGetObjectParameterivARB(h, GL_OBJECT_INFO_LOG_LENGTH_ARB,
-                            &infologLength);
-  
-  if (infologLength > 0) {
-    infoLog = new char[infologLength];
-    glGetInfoLogARB(h, infologLength, &charsWritten, infoLog);
-    printf("%s\n",infoLog);
-    delete [] infoLog;
-  }
-}
-
 Superformula::Superformula() 
-  : mesh(Mesh::createBall(1, 7)), vbo(new GLuint[1])
+  : GLObject(Mesh::createBall(1, 7), vertex_shader, fragment_shader,
+	     GLObject::POSITION)
 {
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-  glGenBuffers(1, vbo);
 
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-  glBufferData(GL_ARRAY_BUFFER, mesh.vertexCount() * sizeof(GLfloat) * 3,
-	       mesh.vertexArray(), GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(0);
-  printf("superformula: %d triangles\n", mesh.vertexCount() / 3);
-
-  shader_v = glCreateShader(GL_VERTEX_SHADER);
-  shader_f = glCreateShader(GL_FRAGMENT_SHADER);
-
-  glShaderSource(shader_v, 1, &vertex_shader, 0);
-  glShaderSource(shader_f, 1, &fragment_shader, 0);
-
-  glCompileShader(shader_v);
-  printInfoLog(shader_v);
-  glCompileShader(shader_f);
-  printInfoLog(shader_f);
-
-  shader_prog = glCreateProgram();
-  glAttachShader(shader_prog, shader_v);
-  glAttachShader(shader_prog, shader_f);
-  glBindAttribLocation(shader_prog, 0, "in_position");
-  glLinkProgram(shader_prog);
-  printInfoLog(shader_prog);
 }
 
 Superformula::~Superformula() {
-  glDetachShader(shader_prog, shader_v);
-  glDetachShader(shader_prog, shader_f);
-  glDeleteProgram(shader_prog);
-  glDeleteShader(shader_v);
-  glDeleteShader(shader_f);
-  glDeleteBuffers(1, vbo);
-  glDeleteVertexArrays(1, &vao);
-  delete [] vbo;
 }
 
 void Superformula::render(double time) {
@@ -153,24 +101,4 @@ void Superformula::render(double time) {
   uniform("abm2", 1.0, 1.0, 2.0);
   uniform("n2", 2.0, 4.0, 4.0);
   glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
-}
-
-GLint Superformula::get_param_pos(const char *name) {
-  /*
-  std::unordered_map<std::string,GLint>::iterator loc = shader_parameters.find(name);
-  GLint handle;
-  if (loc == shader_parameters.end()) {
-    handle = glGetUniformLocation(shader_prog, name.c_str());
-    if (handle < 0) {
-      error("Shader parameter not found");
-      return -1;
-    }
-    shader_parameters[name] = handle;
-  }
-  else {
-    handle = loc->second;
-  }
-  return handle;
-  */
-  return glGetUniformLocation(shader_prog, name);
 }
