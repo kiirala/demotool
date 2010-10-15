@@ -229,7 +229,20 @@ static bool singularity(Point const &a) {
     return true;
   return false;
 }
+
 static Point tc_mid(Point const &a, Point const &b) {
+  Point ca = Point(cos(a.x) * cos(a.y),
+		   sin(a.x) * cos(a.y),
+		   sin(a.y));
+  Point cb = Point(cos(b.x) * cos(b.y),
+		   sin(b.x) * cos(b.y),
+		   sin(b.y));
+  Point mid = (ca + cb) / 2.0;
+  Point spherical(atan2(mid.y, mid.x), asin(mid.z / mid.length()));
+  if (spherical.x < a.x && spherical.x < b.x && (a.x >= M_PI || b.x >= M_PI))
+    spherical.x += 2.0 * M_PI;
+  return spherical;
+  /*
   double mid_x = (a.x + b.x) / 2.0;
   double mid_y = (a.y + b.y) / 2.0;
   if (singularity(a))
@@ -237,6 +250,7 @@ static Point tc_mid(Point const &a, Point const &b) {
   else if (singularity(b))
     mid_x = a.x;
   return Point(mid_x, mid_y);
+  */
 }
 
 Mesh Mesh::createBall(double const radius, int const subdivisions) {
@@ -250,16 +264,18 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
   if (subdivisions == 0) {
     double length = radius / sqrt(2);
     Point tc_a(0.0, M_PI / 2.0);
-    Point tc_b(-M_PI, 0.0);
-    Point tc_c(-M_PI / 2, 0.0);
+    Point tc_b(-M_PI + M_PI / 4, 0.0);
+    Point tc_c(-M_PI / 4, 0.0);
     Point step(M_PI / 2, 0.0);
 
     for (int i = 0 ; i < 4 ; i++) {
-      Point a(0.0, radius, 0.0);
-      Point b((i == 0 || i == 3) ? -length : length, 0.0,
-	      (i <= 1) ? length : -length);
-      Point c((i <= 1) ? length : -length, 0.0,
-	      (i == 0 || i == 3) ? length : -length);
+      Point a(0.0, 0.0, radius);
+      Point b((i == 0 || i == 3) ? -length : length,
+	      (i <= 1) ? -length : length,
+	      0.0);
+      Point c((i <= 1) ? length : -length,
+	      (i == 0 || i == 3) ? -length : length,
+	      0.0);
       Point normal = (b - a).cross(c - a);
 
       Vertex va = Vertex(a, normal);
@@ -276,14 +292,16 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
     }
 
     tc_a.y = -M_PI / 2.0;
-    tc_b.x = -M_PI / 2.0;
-    tc_c.x = -M_PI;
+    tc_b.x = -M_PI / 4.0;
+    tc_c.x = -M_PI + M_PI / 4;
     for (int i = 0 ; i < 4 ; i++) {
-      Point a(0.0, -radius, 0.0);
-      Point b((i <= 1) ? length : -length, 0.0,
-	      (i == 0 || i == 3) ? length : -length);
-      Point c((i == 0 || i == 3) ? -length : length, 0.0,
-	      (i <= 1) ? length : -length);
+      Point a(0.0, 0.0, -radius);
+      Point b((i <= 1) ? length : -length,
+	      (i == 0 || i == 3) ? -length : length,
+	      0.0);
+      Point c((i == 0 || i == 3) ? -length : length,
+	      (i <= 1) ? -length : length,
+	      0.0);
       // TODO: palloahan tässä oltiin tekemässä, joka verteksille pitäisi
       // olla oma normaali
       Point normal = (b - a).cross(c - a);
@@ -323,11 +341,12 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
       if (singularity(tc_a)) tc_a.x = tc_bc.x;
       if (singularity(tc_b)) tc_b.x = tc_ac.x;
       if (singularity(tc_c)) tc_c.x = tc_ab.x;
-
+      /*
       debug("ac diff: %.4f %4f %4f",
 	    cos(tc_ac.x) * cos(tc_ac.y) - mid_ac.x,
-	    sin(tc_ac.x) * cos(tc_ac.y) - mid_ac.z,
-	    sin(tc_ac.y) - mid_ac.y);
+	    sin(tc_ac.x) * cos(tc_ac.y) - mid_ac.y,
+	    sin(tc_ac.y) - mid_ac.z);
+      */
 
       m.vertices.push_back(Vertex(a.loc, a.loc.at_length(1)));
       m.vertices.push_back(Vertex(mid_ab, mid_ab.at_length(1)));

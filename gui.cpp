@@ -2,11 +2,13 @@
 #include <gtk/gtkgl.h>
 #include <gdk/gdkgl.h>
 #include <GL/gl.h>
+#include <sys/time.h>
 
 #include "gui.h"
 #include "moduleloader.h"
 
 bool running;
+bool play;
 
 class Window : public Gtk::Window {
 public:
@@ -20,7 +22,7 @@ public:
   Gtk::Adjustment time;
   Gtk::HScale time_w;
   Gtk::HBox toolbox_buttons;
-  Gtk::Button next_frame, prev_frame, reload, rebuild;
+  Gtk::Button next_frame, prev_frame, play_b, reload, rebuild;
 
   sigc::signal<void> signal_reload, signal_resize, signal_redraw;
   sigc::signal<bool> signal_build;
@@ -34,7 +36,8 @@ public:
   }
 
   void on_time_changed() {
-    signal_redraw.emit();
+    if (!play)
+      signal_redraw.emit();
   }
 
   void on_prev_frame() {
@@ -62,9 +65,40 @@ public:
     printf("Ready!\n");
   }
 
+  double clock_play_start;
+  double slider_play_start;
+
+  void on_play() {
+    if (play) {
+      play = false;
+      play_b.set_label("Play");
+    }
+    else {
+      timeval now;
+      slider_play_start = time.get_value();
+      gettimeofday(&now, 0);
+      clock_play_start = now.tv_sec + now.tv_usec / 1000000.0;
+      play = true;
+      play_b.set_label("Pause");
+    }
+  }
+
+  void advance_time() {
+    timeval now;
+    gettimeofday(&now, 0);
+    double t_now = now.tv_sec + now.tv_usec / 1000000.0;
+    time.set_value(slider_play_start + (t_now - clock_play_start));
+    time_w.queue_draw();
+    if (time.get_value() == time.get_upper()) {
+      play = false;
+      play_b.set_label("Play");
+    }
+  }
+
   Window(ModuleLoader &ml)
     : loader(ml), time(0.0, 0.0, 120.0, 1.0/60, 1.0, 0.0), time_w(time),
-      next_frame(">"), prev_frame("<"), reload("Reload"), rebuild("Rebuild")
+      next_frame(">"), prev_frame("<"), play_b("Play"),
+      reload("Reload"), rebuild("Rebuild")
   {
     set_border_width(10);
     set_title("Demotool");
@@ -94,6 +128,10 @@ public:
     next_frame.signal_clicked().connect(sigc::mem_fun(*this, &Window::on_next_frame));
     next_frame.show();
     toolbox_buttons.pack_start(next_frame, false, true);
+
+    play_b.signal_clicked().connect(sigc::mem_fun(*this, &Window::on_play));
+    play_b.show();
+    toolbox_buttons.pack_start(play_b, false, true);
 
     reload.signal_clicked().connect(sigc::mem_fun(*this, &Window::on_reload));
     reload.show();
@@ -138,6 +176,7 @@ Gui::Gui(ModuleLoader &ml)
   win.signal_redraw.connect(sigc::mem_fun(*this, &Gui::on_redraw));
   on_resize();
   running = true;
+  play = false;
 }
 
 bool Gui::on_build() {
@@ -175,6 +214,8 @@ void Gui::on_redraw() {
   if (!gdk_gl_drawable_gl_begin(gl_drawable, gl_context))
     g_assert_not_reached ();
 
+  if (play)
+    win.advance_time();
   render(win.time.get_value());
 
   if (gdk_gl_drawable_is_double_buffered(gl_drawable))
@@ -196,7 +237,8 @@ void Gui::load_libs() {
 void Gui::run() {
   while(running) {
     on_redraw();
-    Gtk::Main::iteration();
+    //if (!play)
+      Gtk::Main::iteration();
     while( Gtk::Main::events_pending() )
       Gtk::Main::iteration();
   }

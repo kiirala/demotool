@@ -110,8 +110,8 @@ void render(double time) {
   sft->scale = 1.0;
   sft->render(time);
   selectRenderTexture(0);
-  sft->scale = 0.25;
-  sft->render(time);
+  //sft->scale = 0.25;
+  //sft->render(time);
   sf->heightfield = texture[0];
   sf->render(time);
   sfl->heightfield = texture[0];
@@ -141,11 +141,12 @@ void render(double time) {
   glEnd ();
 
   glPopMatrix ();
-
+  /*
   prev->texture = texture[0];
   prev->scale = 0.25;
   prev->size = 1.0;
   prev->render(time);
+  */
 }
 
 void resize(int width, int height) {
