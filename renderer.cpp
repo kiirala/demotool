@@ -3,6 +3,8 @@
 
 #include "superformula.h"
 #include "texturepreview.h"
+#include "caleidoscope.h"
+#include "interpolate.h"
 
 extern "C" void load();
 extern "C" void unload();
@@ -14,11 +16,20 @@ extern "C" void resize(int width, int height);
 Superformula *sf;
 SfTexture *sft;
 SfLights *sfl;
+Caleidoscope *cal;
 TexturePreview *prev;
 GLuint *texture;
 const int texture_count = 1;
 GLuint fbo;
 int viewport[4];
+
+Keyframe sf_shape[] = {
+  {0.0, 4.0},
+  {4.0, 16.0},
+  {8.0, 12.0},
+  {-1.0, 0.0}
+};
+Interpolate *sf_interp;
 
 static void defaultViewport() {
   glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -37,7 +48,9 @@ void load() {
   sf = new Superformula();
   sft = new SfTexture();
   sfl = new SfLights();
+  cal = new Caleidoscope();
   prev = new TexturePreview();
+  sf_interp = new Interpolate(sf_shape, 0.0);
 
   texture = new GLuint[texture_count];
   glGenTextures(texture_count, texture);
@@ -98,7 +111,7 @@ void render(double time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glPushMatrix();
 
-  glRotatef (time * ALPHA, 1, 0, 1);
+  //glRotatef (time * ALPHA, 1, 0, 1);
   glScalef(0.3, 0.3, 0.3);
   // glRotatef (ang, 0, 1, 0);
   // glRotatef (ang, 0, 0, 1);
@@ -108,8 +121,11 @@ void render(double time) {
 
   selectRenderTexture(1);
   sft->scale = 1.0;
+  sft->r1[2] = sf_interp->value(time);
   sft->render(time);
   selectRenderTexture(0);
+  cal->texture = texture[0];
+  cal->render(time);
   //sft->scale = 0.25;
   //sft->render(time);
   sf->heightfield = texture[0];

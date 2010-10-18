@@ -5,7 +5,7 @@ LDFLAGS=`pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(GENERAL)
 OBJECTS=main.o datastorage.o moduleloader.o gui.o
 PROGRAM=main
 DYNOBJ=renderer.so
-DYNREQS=renderer.o superformula.o mesh.o matrix.o logger.o globject.o texturepreview.o
+DYNREQS=renderer.o superformula.o mesh.o matrix.o logger.o globject.o texturepreview.o caleidoscope.o
 
 all: $(PROGRAM) $(DYNOBJ)
 
@@ -20,4 +20,4 @@ $(DYNREQS): %.o: %.cpp
 -include $(OBJECTS:.o=.d) $(DYNREQS:.o=.d)
 
 clean:
-	rm -f $(PROGRAM) $(OBJECTS) $(DYNOBJ) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~
+	rm -f $(PROGRAM) $(OBJECTS) $(DYNOBJ) $(DYNREQS) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~

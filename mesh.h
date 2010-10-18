@@ -28,6 +28,7 @@ public:
 			     int const slices = 16);
   static Mesh createDisk(double const radius, int const slices = 16,
 			 Direction const dir = CCW);
+  static Mesh createFoldedDisk(double const radius, int const slices = 16);
   static Mesh createCone(double const length, double const radius1,
 			 double const radius2, int const slices = 16);
 

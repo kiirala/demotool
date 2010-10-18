@@ -43,6 +43,10 @@ protected:
   void uniform(const char *name, GLfloat v1, GLfloat v2, GLfloat v3) {
     glUniform3f(get_param_pos(name), v1, v2, v3);
   }
+  void uniform3(const char *name, GLfloat *v) {
+    glUniform3fv(get_param_pos(name), 1, v);
+  }
+
   static void logErrorsImpl(char const *file, int const line);
 };
 

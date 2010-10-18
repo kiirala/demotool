@@ -196,6 +196,8 @@ void Superformula::render(double time) {
 SfTexture::SfTexture()
   : GLObject(Mesh::createSquare(), vert_sftex, frag_sftex,
 	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::TEXCOORD)),
+    r1({1.3, 1.0, 12.0, 2.0, 4.0, 4.0}),
+    r2({1.0, 1.0, 2.0, 2.0, 4.0, 4.0}),
     scale(1.0)
 {
 
@@ -205,10 +207,11 @@ void SfTexture::render(double time) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glShadeModel(GL_SMOOTH);
-  uniform("abm1", 1.3, 1.0, time);
-  uniform("n1", 2.0, 4.0, 4.0);
-  uniform("abm2", 1.0, 1.0, 2.0);
-  uniform("n2", 2.0, 4.0, 4.0);
+  //r1[2] = time;
+  uniform3("abm1", r1);
+  uniform3("n1", r1 + 3);
+  uniform3("abm2", r2);
+  uniform3("n2", r2 + 3);
   uniform("scale", scale);
   glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
   logErrors();

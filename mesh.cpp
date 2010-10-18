@@ -194,6 +194,34 @@ Mesh Mesh::createDisk(double const radius, int const slices,
   return m;
 }
 
+Mesh Mesh::createFoldedDisk(double const radius, int const slices)
+{
+  Mesh m;
+  m.type = TRIANGLE_FAN;
+  m.vertices.reserve(slices + 2);
+
+  Point normal(0.0, 0.0, 1.0);
+
+  Vertex center(Point(0.0, 0.0, 0.0), normal);
+  m.vertices.push_back(center);
+  m.texcoords.push_back(Point(0.0, 0.0));
+    
+  for (int i = 0 ; i <= slices ; i++) {
+    double angle = (2 * M_PI / slices) * i;
+    double x = cos(angle) * radius;
+    double y = sin(angle) * radius;
+
+    Vertex a(Point(x, y, 0.0), normal);
+    m.vertices.push_back(a);
+    if (i % 2)
+      m.texcoords.push_back(Point(1.0, 0.0));
+    else
+      m.texcoords.push_back(Point(0.0, 1.0));
+  }
+
+  return m;
+}
+
 /**
  * Luo kartion ilman päätyjä. Toinen pää on origossa, toinen pisteessä
  * (0, length, 0)
