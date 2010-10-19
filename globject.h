@@ -3,7 +3,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <GL/gl.h>
+#include <GL/glew.h>
 
 #include "mesh.h"
 

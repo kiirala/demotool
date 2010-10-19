@@ -180,6 +180,7 @@ void Superformula::render(double time) {
   render_init();
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  glEnable(GL_CULL_FACE);
   glShadeModel(GL_SMOOTH);
   uniform_i("heightfield", 0);
   glBindTexture(GL_TEXTURE_2D, heightfield);
@@ -190,6 +191,7 @@ void Superformula::render(double time) {
   uniform("n2", 2.0, 4.0, 4.0);
   */
   glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
+  glDisable(GL_CULL_FACE);
   logErrors();
 }
 

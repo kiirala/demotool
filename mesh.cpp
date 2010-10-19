@@ -108,6 +108,14 @@ GLfloat* Mesh::texcoordArray() {
   return texcoord_array;
 }
 
+void Mesh::addVertex(Point pos, Point normal) {
+  vertices.push_back(Vertex(pos, normal));
+}
+
+void Mesh::addColour(Colour colour) {
+  colours.push_back(colour);
+}
+
 Mesh Mesh::createSquare() {
   Mesh m;
   m.type = TRIANGLES;

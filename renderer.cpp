@@ -11,33 +11,56 @@ extern "C" void unload();
 extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
-#define ALPHA 90.0
+static void selectRenderTexture(int num);
 
-Superformula *sf;
-SfTexture *sft;
-SfLights *sfl;
-Caleidoscope *cal;
-TexturePreview *prev;
 GLuint *texture;
 const int texture_count = 1;
 GLuint fbo;
 int viewport[4];
 
-Keyframe sf_shape[] = {
+static const Keyframe sf_shape[] = {
   {0.0, 4.0},
   {4.0, 16.0},
   {8.0, 12.0},
   {-1.0, 0.0}
 };
-Interpolate *sf_interp;
+
+class Scene {
+public:
+  Superformula sf;
+  SfTexture sft;
+  SfLights sfl;
+  Caleidoscope cal;
+  TexturePreview prev;
+  Interpolate sf_interp;
+
+  Scene()
+    : sf_interp(sf_shape, 0.0)
+  { }
+
+  void render(double time) {
+    selectRenderTexture(1);
+    sft.scale = 1.0;
+    sft.r1[2] = sf_interp.value(time);
+    sft.render(time);
+    selectRenderTexture(0);
+    cal.texture = texture[0];
+    cal.render(time);
+    //sft.scale = 0.25;
+    //sft.render(time);
+    sf.heightfield = texture[0];
+    sf.render(time);
+    sfl.heightfield = texture[0];
+    sfl.render(time);
+  }
+};
+Scene *scene;
 
 static void defaultViewport() {
   glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 void load() {
-  //sf = 0;
-
   GLenum err = glewInit();
   if (GLEW_OK != err) {
     /* Problem: glewInit failed, something is seriously wrong. */
@@ -45,12 +68,7 @@ void load() {
   }
   fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
-  sf = new Superformula();
-  sft = new SfTexture();
-  sfl = new SfLights();
-  cal = new Caleidoscope();
-  prev = new TexturePreview();
-  sf_interp = new Interpolate(sf_shape, 0.0);
+  scene = new Scene();
 
   texture = new GLuint[texture_count];
   glGenTextures(texture_count, texture);
@@ -86,9 +104,7 @@ void load() {
 }
 
 void unload() {
-  delete sf;
-  delete sft;
-  delete sfl;
+  delete scene;
   glDeleteFramebuffers(1, &fbo);
   glDeleteTextures(texture_count, texture);
   delete [] texture;
@@ -116,22 +132,7 @@ void render(double time) {
   // glRotatef (ang, 0, 1, 0);
   // glRotatef (ang, 0, 0, 1);
 
-  //if (!sf) sf = new Superformula();
-  //if (!sfl) sfl = new SfLights();
-
-  selectRenderTexture(1);
-  sft->scale = 1.0;
-  sft->r1[2] = sf_interp->value(time);
-  sft->render(time);
-  selectRenderTexture(0);
-  cal->texture = texture[0];
-  cal->render(time);
-  //sft->scale = 0.25;
-  //sft->render(time);
-  sf->heightfield = texture[0];
-  sf->render(time);
-  sfl->heightfield = texture[0];
-  sfl->render(time);
+  scene->render(time);
 
   glShadeModel(GL_FLAT);
   glDisable(GL_DEPTH_TEST);

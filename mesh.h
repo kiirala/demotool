@@ -23,6 +23,9 @@ public:
   GLfloat *normalArray();
   GLfloat *texcoordArray();
 
+  void addVertex(Point pos, Point normal);
+  void addColour(Colour colour);
+
   static Mesh createSquare();
   static Mesh createCylinder(double const length, double const radius,
 			     int const slices = 16);
@@ -46,6 +49,7 @@ private:
   Colour colour;
   std::vector<Vertex> vertices;
   std::vector<Point> texcoords;
+  std::vector<Colour> colours;
   GLfloat *v_array;
   GLfloat *n_array;
   GLfloat *texcoord_array;
