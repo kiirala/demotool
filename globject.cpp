@@ -41,7 +41,7 @@ struct ParamName {
 
 ParamName param_names[] = {
   {GLObject::POSITION,  "in_position",  3},
-  {GLObject::COLOR,     "in_color",     3},
+  {GLObject::COLOUR,    "in_colour",    3},
   {GLObject::NORMAL,    "in_normal",    3},
   {GLObject::TANGENT,   "in_tangent",   3},
   {GLObject::BITANGENT, "in_bitangent", 3},
@@ -73,6 +73,7 @@ GLObject::GLObject(Mesh mesh, char const *vert, char const *frag, ShaderParams p
   glAttachShader(shader_prog, shader_v);
   glAttachShader(shader_prog, shader_f);
 
+  assert(shader_params == params);
   int index = 0;
   ParamName *n = param_names;
   while (n->id && n->name) {
@@ -86,6 +87,7 @@ GLObject::GLObject(Mesh mesh, char const *vert, char const *frag, ShaderParams p
       bool dummy_data = false;
       switch(n->id) {
       case GLObject::POSITION:  data = mesh.vertexArray();   break;
+      case GLObject::COLOUR:    data = mesh.colourArray();   break;
       case GLObject::NORMAL:    data = mesh.normalArray();   break;
       case GLObject::TEXCOORD:  data = mesh.texcoordArray(); break;
       default:
@@ -107,6 +109,7 @@ GLObject::GLObject(Mesh mesh, char const *vert, char const *frag, ShaderParams p
       if (dummy_data) delete [] data;
       ++index;
       logErrors();
+      assert(shader_params == params);
     }
     ++n;
   }

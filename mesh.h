@@ -20,12 +20,14 @@ public:
   void transform(Matrix const &trans);
   int vertexCount();
   GLfloat *vertexArray();
+  GLfloat *colourArray();
   GLfloat *normalArray();
   GLfloat *texcoordArray();
 
   void addVertex(Point pos, Point normal);
   void addColour(Colour colour);
 
+  static Mesh createEmpty();
   static Mesh createSquare();
   static Mesh createCylinder(double const length, double const radius,
 			     int const slices = 16);
@@ -51,6 +53,7 @@ private:
   std::vector<Point> texcoords;
   std::vector<Colour> colours;
   GLfloat *v_array;
+  GLfloat *col_array;
   GLfloat *n_array;
   GLfloat *texcoord_array;
 };

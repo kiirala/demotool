@@ -5,6 +5,13 @@
 #include "texturepreview.h"
 #include "caleidoscope.h"
 #include "interpolate.h"
+#include "image.h"
+
+#include "img/test.h"
+#include "img/space.h"
+#include "img/isfun.h"
+#include "img/ishuge.h"
+#include "img/omgponies.h"
 
 extern "C" void load();
 extern "C" void unload();
@@ -12,6 +19,9 @@ extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
 static void selectRenderTexture(int num);
+
+int const aspectratio_w = 16;
+int const aspectratio_h = 9;
 
 GLuint *texture;
 const int texture_count = 1;
@@ -27,6 +37,8 @@ static const Keyframe sf_shape[] = {
 
 class Scene {
 public:
+  int screen_width, screen_height;
+
   Superformula sf;
   SfTexture sft;
   SfLights sfl;
@@ -34,11 +46,16 @@ public:
   TexturePreview prev;
   Interpolate sf_interp;
 
+  Image space;
+
   Scene()
-    : sf_interp(sf_shape, 0.0)
+    : sf_interp(sf_shape, 0.0),
+      space(drawsvg_test)
   { }
 
   void render(double time) {
+    normal_projection();
+    glScalef (4., 4., 4.);
     selectRenderTexture(1);
     sft.scale = 1.0;
     sft.r1[2] = sf_interp.value(time);
@@ -52,6 +69,30 @@ public:
     sf.render(time);
     sfl.heightfield = texture[0];
     sfl.render(time);
+
+    pixel_coordinate_projection();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    space.render(time);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+
+  void normal_projection() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho (-aspectratio_w, aspectratio_w,
+	     -aspectratio_h, aspectratio_h,
+	     -20050, 10000);
+
+    glMatrixMode(GL_MODELVIEW);    
+    glLoadIdentity();
+  }
+
+  void pixel_coordinate_projection() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, 1280, 720, 0, -10, 10);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
   }
 };
 Scene *scene;
@@ -125,14 +166,15 @@ static void selectRenderTexture(int num) {
 
 void render(double time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  scene->render(time);
+
   glPushMatrix();
 
   //glRotatef (time * ALPHA, 1, 0, 1);
   glScalef(0.3, 0.3, 0.3);
   // glRotatef (ang, 0, 1, 0);
   // glRotatef (ang, 0, 0, 1);
-
-  scene->render(time);
 
   glShadeModel(GL_FLAT);
   glDisable(GL_DEPTH_TEST);
@@ -167,8 +209,8 @@ void render(double time) {
 }
 
 void resize(int width, int height) {
-  int const aspectratio_w = 16;
-  int const aspectratio_h = 9;
+  scene->screen_width = width;
+  scene->screen_height = height;
 
   int used_w, used_h;
   if (width * aspectratio_h >= height * aspectratio_w) {
@@ -179,20 +221,10 @@ void resize(int width, int height) {
     used_w = width;
     used_h = width * aspectratio_h / aspectratio_w;
   }
-
+  
   viewport[0] = (width - used_w) / 2;
   viewport[1] = (height - used_h) / 2;
   viewport[2] = used_w;
   viewport[3] = used_h;
   defaultViewport();
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho (-aspectratio_w, aspectratio_w,
-	   -aspectratio_h, aspectratio_h,
-	   -20050, 10000);
-  glMatrixMode(GL_MODELVIEW);
-  
-  glLoadIdentity();
-  glScalef (10., 10., 10.);
 }

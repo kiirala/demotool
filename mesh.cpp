@@ -10,7 +10,8 @@
 #include "logger.h"
 
 Mesh::Mesh()
-  : type(TRIANGLES), vertices(), v_array(0), n_array(0), texcoord_array(0)
+  : type(TRIANGLES), vertices(),
+    v_array(0), col_array(0), n_array(0), texcoord_array(0)
 {
   colour.set(0.0, 0.0, 0.0);
 }
@@ -19,6 +20,7 @@ Mesh::~Mesh() {
   delete [] v_array;
   delete [] n_array;
   delete [] texcoord_array;
+  delete [] col_array;
 }
 
 void Mesh::render() const {
@@ -76,6 +78,25 @@ GLfloat* Mesh::vertexArray() {
   return v_array;
 }
 
+GLfloat* Mesh::colourArray() {
+  if (!col_array) {
+    if (colours.size() == 0)
+      return 0;
+    assert(colours.size() == vertices.size());
+    col_array = new GLfloat[vertexCount() * 3];
+  }
+  
+  int a_pos = 0;
+  for (std::vector<Colour>::iterator i = colours.begin() ;
+       i != colours.end() ; i++) {
+    col_array[a_pos] = i->r;
+    col_array[a_pos + 1] = i->g;
+    col_array[a_pos + 2] = i->b;
+    a_pos += 3;
+  }
+  return col_array;
+}
+
 GLfloat* Mesh::normalArray() {
   if (!n_array) n_array = new GLfloat[vertexCount() * 3];
 
@@ -114,6 +135,12 @@ void Mesh::addVertex(Point pos, Point normal) {
 
 void Mesh::addColour(Colour colour) {
   colours.push_back(colour);
+}
+
+Mesh Mesh::createEmpty() {
+  Mesh m;
+  m.type = TRIANGLES;
+  return m;
 }
 
 Mesh Mesh::createSquare() {

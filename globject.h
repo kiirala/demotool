@@ -14,7 +14,7 @@ public:
   enum ShaderParams {
     EMPTY_PARAMS = 0,
     POSITION = 1,
-    COLOR = 2,
+    COLOUR = 2,
     NORMAL = 4,
     TANGENT = 8,
     BITANGENT = 0x10,

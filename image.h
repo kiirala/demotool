@@ -8,7 +8,7 @@ struct BezierPath {
 };
 
 struct BezierShape {
-  float colour[3];
+  float colour[4];
   BezierPath *path;
 };
 
@@ -21,7 +21,6 @@ public:
   GLuint texture;
 
 private:
-  std::vector<Mesh> shapes;
 };
 
 
