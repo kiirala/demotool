@@ -14,6 +14,7 @@
 #include "img/omgponies.h"
 #include "img/aurinko.h"
 #include "img/pony.h"
+#include "img/gospace.h"
 
 extern "C" void load();
 extern "C" void unload();
@@ -111,7 +112,7 @@ public:
   Interpolate<3> pony_fly_i;
   Sunrise sunrise;
 
-  Image space, isfun, ishuge, omgponies, aurinko, pony;
+  Image space, isfun, ishuge, omgponies, aurinko, pony, gospace;
 
   Scene()
     : sf_lores(4),
@@ -124,7 +125,8 @@ public:
       ishuge(drawsvg_ishuge),
       omgponies(drawsvg_omgponies),
       aurinko(drawsvg_aurinko),
-      pony(drawsvg_pony)
+      pony(drawsvg_pony),
+      gospace(drawsvg_gospace)
   {
     sf_interp.set_loop(8.0);
     sf_rotate_i.set_loop(8.0);
@@ -136,53 +138,55 @@ public:
   void render(double time) {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     normal_projection();
-    glScalef (4., 4., 4.);
-    selectRenderTexture(1);
-    if (time >= 16) {
-      sft.r1[0] = 1.1 + pow(fabs(1.0 - (time - ((int)time)) * 2), 6) * 0.4;
-      sft.r2[2] = sf_interp.value(time);
-    }
-    else {
-      sft.set_factors(sf_begin_i.value(time));
-    }
-    sft.scale = 1.0;
-    sft.render(time);
-    selectRenderTexture(0);
-    if (time >= 16) {
-      cal.scale = fmin(0.25, (time - 16) / 4.0);
-      cal.alpha = cal.scale * 4.0;
-      cal.texture = texture[0];
-      cal.render(time);
-    }
-    int array_count = 1;
-    Superformula *use_sf = &sf;
-    if (time >= 34 && time < 48) {
-      array_count = 7;
-      use_sf = &sf_lores;
-    }
-    for (int x = 0 ; x < array_count ; ++x) {
-      for (int y = 0 ; y < array_count ; ++y) {
-	glPushMatrix();
-	float drop = drop_sf_i.value(time);
-	glTranslatef(1.2 * (x - array_count / 2), 1.2 * (y - array_count / 2) + drop, 0);
-	double scale = 1.0 / array_count;
-	glScalef(scale, scale, scale);
-	float *rotate = sf_rotate_i.value(time);
-	float div = sqrt(rotate[1] * rotate[1] + rotate[2] * rotate[2] + rotate[3] * rotate[3]);
-	glRotatef(rotate[0], rotate[1] / div, rotate[2] / div, rotate[3] / div);
-	//if (time < 17) {
-	float *v = sun_movement_i.value(time);
-	use_sf->lightdir[0] = -v[0];
-	use_sf->lightdir[1] = -v[1];
-	use_sf->lightdir[2] = v[2];
-	//}
-	use_sf->heightfield = texture[0];
-	use_sf->render(time);
-	if (time > 16 && array_count == 1) {
-	  sfl.heightfield = texture[0];
-	  sfl.render(time);
+    if (time < 72) {
+      glScalef (4., 4., 4.);
+      selectRenderTexture(1);
+      if (time >= 16) {
+	sft.r1[0] = 1.1 + pow(fabs(1.0 - (time - ((int)time)) * 2), 6) * 0.4;
+	sft.r2[2] = sf_interp.value(time);
+      }
+      else {
+	sft.set_factors(sf_begin_i.value(time));
+      }
+      sft.scale = 1.0;
+      sft.render(time);
+      selectRenderTexture(0);
+      if (time >= 16) {
+	cal.scale = fmin(0.25, (time - 16) / 4.0);
+	cal.alpha = cal.scale * 4.0;
+	cal.texture = texture[0];
+	cal.render(time);
+      }
+      int array_count = 1;
+      Superformula *use_sf = &sf;
+      if (time >= 34 && time < 48) {
+	array_count = 7;
+	use_sf = &sf_lores;
+      }
+      for (int x = 0 ; x < array_count ; ++x) {
+	for (int y = 0 ; y < array_count ; ++y) {
+	  glPushMatrix();
+	  float drop = drop_sf_i.value(time);
+	  glTranslatef(1.2 * (x - array_count / 2), 1.2 * (y - array_count / 2) + drop, 0);
+	  double scale = 1.0 / array_count;
+	  glScalef(scale, scale, scale);
+	  float *rotate = sf_rotate_i.value(time);
+	  float div = sqrt(rotate[1] * rotate[1] + rotate[2] * rotate[2] + rotate[3] * rotate[3]);
+	  glRotatef(rotate[0], rotate[1] / div, rotate[2] / div, rotate[3] / div);
+	  //if (time < 17) {
+	  float *v = sun_movement_i.value(time);
+	  use_sf->lightdir[0] = -v[0];
+	  use_sf->lightdir[1] = -v[1];
+	  use_sf->lightdir[2] = v[2];
+	  //}
+	  use_sf->heightfield = texture[0];
+	  use_sf->render(time);
+	  if (time > 16 && array_count == 1) {
+	    sfl.heightfield = texture[0];
+	    sfl.render(time);
+	  }
+	  glPopMatrix();
 	}
-	glPopMatrix();
       }
     }
 
@@ -199,7 +203,6 @@ public:
     if (time >= 16 && time < 32) {
       text_i.set_start(16.0);
       pixel_coordinate_projection();
-      glLoadIdentity();
       glTranslatef(text_i.value(time) * 500, 0, 0);
       space.render(time);
 
@@ -219,7 +222,6 @@ public:
     else if (time >= 32 && time < 48) {
       text_i.set_start(32.0);
       pixel_coordinate_projection();
-      glLoadIdentity();
       glTranslatef(text_i.value(time) * 500, 0, 0);
       space.render(time);
 
@@ -231,7 +233,6 @@ public:
     else if (time >= 48 && time < 64) {
       text_i.set_start(48.0);
       pixel_coordinate_projection();
-      glLoadIdentity();
       glTranslatef(text_i.value(time) * 500, 0, 0);
       space.render(time);
 
@@ -249,8 +250,14 @@ public:
     }
 
     if (time > 64) {
-      
-
+      pixel_coordinate_projection();
+      if (time < 72)
+	gospace.alpha = (time - 68) / 4.0;
+      else if (time >= 75)
+	gospace.alpha = 1.0 - ((time - 75) / 4.0);
+      else
+	gospace.alpha = 1.0;
+      gospace.render(time);
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

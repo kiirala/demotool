@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_sound.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <GL/gl.h>
 
@@ -12,9 +13,9 @@ extern "C" void unload();
 extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
-//#define FULLSCREEN
-static const int scrWidth = 1280;
-static const int scrHeight = 720;
+static bool fullscreen = true;
+static int scrWidth = 1280;
+static int scrHeight = 720;
 static const int scrBPP = 32;
 //static const char *font_file = "/usr/share/fonts/ttf-bitstream-vera/Vera.ttf";
 
@@ -105,9 +106,8 @@ void init_sdl() {
 
   /* Set the video mode */
   int videoFlags = SDL_OPENGL;
-#ifdef FULLSCREEN
-  videoFlags |= SDL_FULLSCREEN;
-#endif
+  if (fullscreen)
+    videoFlags |= SDL_FULLSCREEN;
 
   SDL_Surface *surface = SDL_SetVideoMode(scrWidth, scrHeight, scrBPP,
 					  videoFlags);
@@ -175,13 +175,40 @@ void load_song() {
   global_done_flag = 0;  /* the audio callback will flip this flag. */
 }
 
-void cleanup(int state, void * /*foo*/) {
+void cleanup(int /*state*/, void * /*foo*/) {
   Sound_FreeSample(data.sample);  /* clean up SDL_Sound resources... */
   unload();
   SDL_Quit();
 }
 
 int main(int argc, char ** argv) {
+  int opt;
+  while ((opt = getopt(argc, argv, "fws:")) != -1) {
+    switch (opt) {
+    case 'f':
+      fullscreen = true;
+      break;
+    case 'w':
+      fullscreen = false;
+      break;
+    case 's': {
+      int r = sscanf(optarg, "%dx%d", &scrWidth, &scrHeight);
+      if (r == 2)
+	break;
+      // else fall through
+    }
+    default: /* '?' */
+      fprintf(stderr,
+	      "Usage: %s [-f] [-w] [-s 1280x720]\n"
+	      "    -f: fullscreen\n"
+	      "    -w: windowed\n"
+	      "    -s: screen resolution\n",
+	      argv[0]);
+      exit(EXIT_FAILURE);
+    }
+  }
+
+
   init_sdl();
   on_exit(cleanup, 0);
   load();
@@ -215,7 +242,7 @@ int main(int argc, char ** argv) {
     SDL_GL_SwapBuffers();
     last_draw = time;
     drawn++;
-    if (time > 64 * 1000) running = false;
+    if (time > 80 * 1000) running = false;
   }
 
   uint32_t end = SDL_GetTicks();

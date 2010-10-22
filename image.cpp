@@ -160,6 +160,7 @@ static const char *fragment_shader =
 "#version 150\n"
 "const float PI = 3.14159265;\n"
 "uniform sampler2D texture;\n"
+"uniform float alpha;\n"
 
 "// It was expressed that some drivers required this next line to function properly\n"
 "precision highp float;\n"
@@ -168,14 +169,15 @@ static const char *fragment_shader =
 "out vec4 FragColor;\n"
 
 "void main(void) {\n"
-"    FragColor = colour;"
+"    FragColor = colour * vec4(1.0, 1.0, 1.0, alpha);"
 "}\n"
 ;
 
 
 Image::Image(BezierShape *shapes)
   : GLObject(create_mesh(shapes), vertex_shader, fragment_shader,
-	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::COLOUR))
+	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::COLOUR)),
+    alpha(1.0)
 {
 
 }
@@ -184,6 +186,7 @@ void Image::render(double time) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glShadeModel(GL_SMOOTH);
+  uniform("alpha", alpha);
   glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
   logErrors();
 }

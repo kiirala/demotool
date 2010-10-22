@@ -1,6 +1,6 @@
-GENERAL=-O0 -g -march=native -Wall -Wextra -std=c++0x
+GENERAL=-Os -g -march=k8 -Wall -Wextra -std=c++0x
 CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL) -MMD -MP
-LDFLAGS=`pkg-config --libs gtkmm-2.4 gtkglext-1.0 sdl` -lSDL_sound $(GENERAL)
+LDFLAGS=-lGLEW -lSDL_sound $(GENERAL)
 
 OBJECTS=main.o datastorage.o moduleloader.o gui.o
 PROGRAM=main
@@ -12,12 +12,14 @@ IMAGES=$(patsubst %.svg,%.h,$(wildcard img/*.svg))
 
 all: $(PROGRAM) $(SDLPROGRAM) $(DYNOBJ)
 
-$(SDLPROGRAM): $(SDLOBJECTS) $(DYNOBJ)
+$(SDLPROGRAM): $(SDLOBJECTS) $(DYNREQS)
+	$(CXX) `pkg-config --libs sdl` $(LDFLAGS) $^ -o $@
 
 $(PROGRAM): $(OBJECTS)
+	$(CXX) `pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(LDFLAGS) $^ -o $@
 
 $(DYNOBJ): $(DYNREQS)
-	$(CXX) -shared $(LDFLAGS) -lGLEW $^ -o $@
+	$(CXX) -shared $(LDFLAGS) $^ -o $@
 
 $(DYNREQS): %.o: %.cpp $(IMAGES)
 	$(CXX) -fPIC -c $(CXXFLAGS) $< -o $@
@@ -28,4 +30,4 @@ $(IMAGES): %.h: %.svg
 -include $(OBJECTS:.o=.d) $(DYNREQS:.o=.d)
 
 clean:
-	rm -f $(PROGRAM) $(OBJECTS) $(DYNOBJ) $(DYNREQS) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~
+	rm -f $(PROGRAM) $(SDLPROGRAM) $(SDLOBJECTS) $(OBJECTS) $(DYNOBJ) $(DYNREQS) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~
