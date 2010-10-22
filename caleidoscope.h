@@ -11,6 +11,7 @@ public:
   void render(double time);
 
   GLuint texture;
+  float scale, alpha;
 
 private:
 

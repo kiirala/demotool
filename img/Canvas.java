@@ -22,15 +22,12 @@ public class Canvas extends Graphics2D {
      * käyrä.
      */
     class Event {
-	public boolean stroke;
 	public float[] pos;
-	public Event(boolean stroke, float[] pos) {
-	    this.stroke = stroke;
+	public Event(float[] pos) {
 	    this.pos = Arrays.copyOf(pos, 6);
 	}
 	public String toString() {
-	    return String.format("%s %8.2f %8.2f %8.2f %8.2f %8.2f %8.2f",
-				 stroke ? "stroke" : "move  ",
+	    return String.format("%8.2f %8.2f %8.2f %8.2f %8.2f %8.2f",
 				 pos[0], pos[1], pos[2], pos[3],
 				 pos[4], pos[5]);
 	}
@@ -80,37 +77,62 @@ public class Canvas extends Graphics2D {
 	float[] start = null;
 	float[] pos = new float[6];
 	float[] substart = null;
+	float[] currentPoint = new float[2];
+	int prevType = 0;
 	ArrayList<Event> events = new ArrayList<Event>();
 	while (!path.isDone()) {
 	    Arrays.fill(pos, 0);
 	    int type = path.currentSegment(pos);
+	    prevType = type;
 	    if (start == null) {
 		start = Arrays.copyOf(pos, 6);
 		substart = Arrays.copyOf(pos, 6);
 	    }
-	    boolean stroke;
 	    if (type == PathIterator.SEG_MOVETO) {
 		substart = Arrays.copyOf(pos, 6);
-		stroke = false;
-	    }
-	    else {
-		stroke = true;
-	    }
-	    if (type != PathIterator.SEG_CLOSE) {
-		if (stroke)
-		    events.add(new Event(stroke, pos));
-		else if (events.size() > 0) {
+		currentPoint = Arrays.copyOf(pos, 2);
+		if (events.size() > 0) {
 		    shapes.add(new MyShape(events, currentColour));
 		    events = new ArrayList<Event>();
 		}
 	    }
-	    else
-		events.add(new Event(stroke, substart));
+	    else if (type == PathIterator.SEG_CLOSE) {
+		events.add(new Event(substart));
+		currentPoint = Arrays.copyOf(substart, 2);
+	    }
+	    else {
+		float[] p = new float[6];
+		p[0] = currentPoint[0];
+		p[1] = currentPoint[1];
+		if (type == PathIterator.SEG_LINETO) {
+		    p[2] = p[3] = p[4] = p[5] = 0.0f;
+		    currentPoint[0] = pos[0];
+		    currentPoint[1] = pos[1];
+		}
+		else if (type == PathIterator.SEG_QUADTO) {
+		    p[2] = p[4] = pos[0];
+		    p[3] = p[5] = pos[1];
+		    currentPoint[0] = pos[2];
+		    currentPoint[1] = pos[3];		    
+		}
+		else {
+		    p[2] = pos[0];
+		    p[3] = pos[1];
+		    p[4] = pos[2];
+		    p[5] = pos[3];
+		    currentPoint[0] = pos[4];
+		    currentPoint[1] = pos[5];		    
+		}
+		events.add(new Event(p));
+	    }
 	    path.next();
 	}
-	if (events.size() > 0)
+	if (prevType != PathIterator.SEG_CLOSE) {
+	    events.add(new Event(substart));
+	}
+	if (events.size() > 0) {
 	    shapes.add(new MyShape(events, currentColour));
-	//events.add(new Event(false, start));
+	}
     }
 
     @Override

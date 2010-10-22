@@ -1,9 +1,9 @@
-#include <cstdio>
 #include <GL/glew.h>
 
-#include "caleidoscope.h"
+#include "sunrise.h"
 #include "globject.h"
 #include "mesh.h"
+#include "logger.h"
 
 static const char *vertex_shader =
 "#version 150 compatibility\n"
@@ -24,8 +24,6 @@ static const char *fragment_shader =
 "#version 150\n"
 "const float PI = 3.14159265;\n"
 "uniform sampler2D texture;\n"
-"uniform float scale;\n"
-"uniform float alpha;\n"
 
 "// It was expressed that some drivers required this next line to function properly\n"
 "precision highp float;\n"
@@ -35,30 +33,27 @@ static const char *fragment_shader =
 "out vec4 FragColor;\n"
 
 "void main(void) {\n"
-  //"vec4 c = vec4(polarCoord, 0.0, 1.0);\n"
-"    vec4 c = vec4(texture2D(texture, texcoord).rgb * scale, alpha);\n"
+"    float sun = max(0.0, pow(1.0 - length(texcoord), 3.0));\n"
+"    float ray = max(0.0, pow(1.0 - min(texcoord.x, texcoord.y / 1.5) - max(texcoord.x, texcoord.y * 1.5) / 2.0, 5.0));\n"
+"    vec4 c = vec4(1.0, 0.765, 0.267, ray) + sun * vec4(1.0, 1.0, 1.0, 1.0);\n"
 "    FragColor = c;"
 "}\n"
 ;
 
-Caleidoscope::Caleidoscope()
-  : GLObject(Mesh::createFoldedDisk(10, 20),
+Sunrise::Sunrise()
+  : GLObject(Mesh::createFoldedDisk(1, 12),
 	     vertex_shader, fragment_shader,
-	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::TEXCOORD)),
-    scale(1), alpha(1)
+	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::TEXCOORD))
 {
 
 }
 
-void Caleidoscope::render(double time) {
+void Sunrise::render(double time) {
   render_init();
   glDisable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glShadeModel(GL_SMOOTH);
-  uniform_i("texture", 0);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  uniform("scale", scale);
-  uniform("alpha", alpha);
   glDrawArrays(GL_TRIANGLE_FAN, 0, mesh.vertexCount());
   logErrors();
 }

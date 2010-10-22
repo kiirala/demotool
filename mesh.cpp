@@ -233,7 +233,7 @@ Mesh Mesh::createFoldedDisk(double const radius, int const slices)
 {
   Mesh m;
   m.type = TRIANGLE_FAN;
-  m.vertices.reserve(slices + 2);
+  m.vertices.reserve(slices * 2 + 2);
 
   Point normal(0.0, 0.0, 1.0);
 
@@ -241,14 +241,18 @@ Mesh Mesh::createFoldedDisk(double const radius, int const slices)
   m.vertices.push_back(center);
   m.texcoords.push_back(Point(0.0, 0.0));
     
-  for (int i = 0 ; i <= slices ; i++) {
-    double angle = (2 * M_PI / slices) * i;
-    double x = cos(angle) * radius;
-    double y = sin(angle) * radius;
+  for (int i = 0 ; i <= slices * 2; i++) {
+    double scale = (i % 2) ? sqrt(2): 1.0;
+    double angle = (2 * M_PI / (slices * 2)) * i;
+    double x = cos(angle) * radius * scale;
+    double y = sin(angle) * radius * scale;
 
     Vertex a(Point(x, y, 0.0), normal);
     m.vertices.push_back(a);
-    if (i % 2)
+    if (i % 2) {
+      m.texcoords.push_back(Point(1.0, 1.0));
+    }
+    else if (i % 4)
       m.texcoords.push_back(Point(1.0, 0.0));
     else
       m.texcoords.push_back(Point(0.0, 1.0));

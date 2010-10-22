@@ -90,13 +90,13 @@ public class DrawSVG {
 		else if (e.pos[2] == 0 && e.pos[3] == 0 &&
 		    e.pos[4] == 0 && e.pos[5] == 0) {
 		    Canvas.Event next = s.events.get(i + 1);
-		    os.printf("    {{%.4f, %.4f, %.4f, %.4f, %.4f, %.4f}},\n",
+		    os.printf("    {{%.4f, %.4f, %.4f, %.4f, %.4f, %.4f}}, /*line*/\n",
 			      e.pos[0], e.pos[1],
 			      e.pos[0], e.pos[1],
 			      next.pos[0], next.pos[1]);
 		}
 		else {
-		    os.printf("    {{%.4f, %.4f, %.4f, %.4f, %.4f, %.4f}},\n",
+		    os.printf("    {{%.4f, %.4f, %.4f, %.4f, %.4f, %.4f}}, /*cubic*/\n",
 			      e.pos[0], e.pos[1],
 			      e.pos[2], e.pos[3],
 			      e.pos[4], e.pos[5]);

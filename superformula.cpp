@@ -54,13 +54,14 @@ static const char *frag_superformula =
 "in  vec3 normal;\n"
 "in  vec3 worldPos;\n"
 "out vec4 FragColor;\n"
+"uniform vec3 lightdir;\n"
 
 "void main(void) {\n"
 "    vec3 N = normalize(normal);"
 "    vec3 V = normalize(worldPos);"
 "    vec3 R = reflect(V, N);"
 "    //vec3 L = normalize(vec3(gl_LightSource[0].position));\n"
-"    vec3 L = vec3(0.0, 0.0, -1.0);"
+"    vec3 L = normalize(lightdir);"
 
 "    vec3 color = ex_Color;"
 "    float shininess = 10.0;"
@@ -169,9 +170,11 @@ static const char *frag_sflights =
 "}\n"
 ;
 
-Superformula::Superformula() 
-  : GLObject(Mesh::createBall(1, 7), vert_superformula, frag_superformula,
-	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::TEXCOORD))
+Superformula::Superformula(int resolution) 
+  : GLObject(Mesh::createBall(1, resolution),
+	     vert_superformula, frag_superformula,
+	     (GLObject::ShaderParams)(GLObject::POSITION | GLObject::TEXCOORD)),
+    lightdir({0.0, 0.0, -1.0})
 {
 
 }
@@ -184,6 +187,7 @@ void Superformula::render(double time) {
   glShadeModel(GL_SMOOTH);
   uniform_i("heightfield", 0);
   glBindTexture(GL_TEXTURE_2D, heightfield);
+  uniform3("lightdir", lightdir);
   /*
   uniform("abm1", 1.3, 1.0, time);
   uniform("n1", 2.0, 4.0, 4.0);
@@ -217,6 +221,13 @@ void SfTexture::render(double time) {
   uniform("scale", scale);
   glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
   logErrors();
+}
+
+void SfTexture::set_factors(float *f) {
+  for (int i = 0 ; i < 6 ; ++i)
+    r1[i] = f[i];
+  for (int i = 0 ; i < 6 ; ++i)
+    r2[i] = f[i + 6];
 }
 
 SfLights::SfLights() 

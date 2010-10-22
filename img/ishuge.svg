@@ -33,9 +33,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.0142516"
-     inkscape:cx="946.90223"
-     inkscape:cy="-36.275287"
+     inkscape:zoom="2.8687367"
+     inkscape:cx="654.09042"
+     inkscape:cy="-8.3884482"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:window-width="1280"
@@ -105,9 +105,9 @@
     </g>
     <path
        id="path3774"
-       d="m 663.52465,740.78332 778.78125,-4.5 c 2.2413,-0.02 4.4089,-1.45113 5.3076,-3.50445 0.8987,-2.05333 0.4796,-4.61669 -1.0264,-6.2768 l -158,-174 c -1.092,-1.21374 -2.711,-1.93591 -4.3437,-1.9375 l -564.31255,0 c -1.53879,-0.004 -3.06947,0.6293 -4.1562,1.71875 l -56.4063,56.4375 c -1.08207,1.0794 -1.71423,2.59661 -1.7187,4.125 l 0,122.09375 c 0.004,3.06924 2.80579,5.85656 5.875,5.84375 z m 5.8125,-11.71875 0,-113.78125 53,-53 559.34375,0 147.4375,162.375 -759.78125,4.40625 z"
+       d="m 663.52465,740.78332 c 0,0 5.8125,-11.71875 5.8125,-11.71875 l 0,-113.78125 53,-53 559.34375,0 6.9062,-9.78125 c -1.092,-1.21374 -2.711,-1.93591 -4.3437,-1.9375 l -564.31255,0 c -1.53879,-0.004 -3.06947,0.6293 -4.1562,1.71875 l -56.4063,56.4375 c -1.08207,1.0794 -1.71423,2.59661 -1.7187,4.125 l 0,122.09375 c 0.004,3.06924 2.80579,5.85656 5.875,5.84375 z m 5.8125,-11.71875 -5.8125,11.71875 778.78125,-4.5 c 2.2413,-0.02 4.4089,-1.45113 5.3076,-3.50445 0.8987,-2.05333 0.4796,-4.61669 -1.0264,-6.2768 l -158,-174 -6.9062,9.78125 147.4375,162.375 -759.78125,4.40625 z"
        style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#181834;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:11.69999981;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-       sodipodi:nodetypes="ccsccccccccccccccc" />
+       sodipodi:nodetypes="ccccccccccccccccsccccc" />
     <path
        id="path3776"
        d="m 689.52465,740.65832 171.84374,-1.21875 8.21871,-11.71875 -171.87495,1.1875 -8.1875,11.75 z m 295.56245,-178.375 8.1875,-11.71875 -170.96871,0 -8.1875,11.71875 170.96871,0 z"
