@@ -150,7 +150,7 @@ bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
 
 
 
-  delete V;
+  delete [] V;
 
   return true;
 }

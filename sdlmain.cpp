@@ -214,6 +214,7 @@ int main(int argc, char ** argv) {
   load();
   resize(scrWidth, scrHeight);
   load_song();
+  SDL_ShowCursor(SDL_DISABLE);
 
   SDL_Event event;
   uint32_t last_draw = 0;

@@ -1,6 +1,6 @@
 GENERAL=-Os -g -march=k8 -Wall -Wextra -std=c++0x
 CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL) -MMD -MP
-LDFLAGS=-lGLEW -lSDL_sound $(GENERAL)
+LDFLAGS=-lGLU -lGLEW -lSDL_sound $(GENERAL)
 
 OBJECTS=main.o datastorage.o moduleloader.o gui.o
 PROGRAM=main
