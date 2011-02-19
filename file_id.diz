@@ -1,0 +1,7 @@
+Go Space! by Niko Kiirala
+Small demo for Alternative Demo compo at Alternative Party 2010
+
+Platform:
+Linux x86-64
+Requires:
+SDL, SDL_sound with XM support, GLEW
