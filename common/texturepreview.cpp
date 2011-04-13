@@ -44,7 +44,7 @@ TexturePreview::TexturePreview()
 
 }
 
-void TexturePreview::render(double time) {
+void TexturePreview::render(double /*time*/) {
   logErrors();
   glShadeModel(GL_SMOOTH);
   glDisable(GL_DEPTH_TEST);

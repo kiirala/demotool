@@ -182,7 +182,7 @@ Image::Image(BezierShape *shapes)
 
 }
 
-void Image::render(double time) {
+void Image::render(double /*time*/) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glShadeModel(GL_SMOOTH);

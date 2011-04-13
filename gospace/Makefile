@@ -8,10 +8,10 @@ IMAGES=$(patsubst %.svg,%.h,$(wildcard img/*.svg))
 
 all: $(STATIC) $(DYNOBJ)
 
-$(STATIC): ../tool/sdlmain.o $(DYNREQS)
+$(STATIC): $(DYNREQS) ../tool/sdlmain.o ../common/common.a 
 	$(CXX) `pkg-config --libs sdl` $(LDFLAGS) $^ -o $@
 
-$(DYNOBJ): ../common/common.a $(DYNREQS)
+$(DYNOBJ): $(DYNREQS) ../common/common.a
 	$(CXX) -shared $(LDFLAGS) $^ -o $@
 
 $(DYNREQS): %.o: %.cpp $(IMAGES)

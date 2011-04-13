@@ -5,12 +5,12 @@ PROJECTS=gospace
 COMMON=common/common.a
 
 all: $(PROGRAMS) $(PROJECTS) $(COMMON)
+	cp tool/main demotool
 
-.PHONY: $(PROJECTS)
+.PHONY: $(PROGRAMS) $(PROJECTS) $(COMMON) clean
 
 $(PROGRAMS):
 	$(MAKE) -C tool $@
-	cp tool/$@ .
 
 $(PROJECTS): $(COMMON) $(PROGRAMS)
 	$(MAKE) -C $@
@@ -19,8 +19,8 @@ $(COMMON):
 	$(MAKE) -C common
 
 clean:
-	rm -f $(PROGRAMS)
+	rm -f demotool
 	$(MAKE) -C tool clean
 	$(MAKE) -C common clean
-	for i in $(PROJECTS) ; do make -C $i clean ; done
+	for i in $(PROJECTS) ; do make -C $$i clean ; done
 

@@ -179,7 +179,7 @@ Superformula::Superformula(int resolution)
 
 }
 
-void Superformula::render(double time) {
+void Superformula::render(double /*time*/) {
   render_init();
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -209,7 +209,7 @@ SfTexture::SfTexture()
 
 }
 
-void SfTexture::render(double time) {
+void SfTexture::render(double /*time*/) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glShadeModel(GL_SMOOTH);
@@ -237,7 +237,7 @@ SfLights::SfLights()
 
 }
 
-void SfLights::render(double time) {
+void SfLights::render(double /*time*/) {
   render_init();
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);

@@ -18,22 +18,6 @@ bool use_framebuffer_object() {
   return false;
 }
 
-struct Program {
-  GLuint vertex, fragment;
-};
-std::vector<Program> programs;
-
-static void useProgram(GLuint program) {
-  if (program == 0) {
-    glBindProgramARB(GL_VERTEX_PROGRAM_ARB, 0);
-    glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, 0);
-  }
-  else if (program <= programs.size()) {
-    glBindProgramARB(GL_VERTEX_PROGRAM_ARB, programs[program - 1].vertex);
-    glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, programs[program - 1].fragment);
-  }
-}
-
 bool use_shader_programs() {
   if (GLEW_VERSION_2_0)
     return true;
