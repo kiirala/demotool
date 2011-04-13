@@ -50,7 +50,7 @@ Caleidoscope::Caleidoscope()
 
 }
 
-void Caleidoscope::render(double time) {
+void Caleidoscope::render(double /*time*/) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);

@@ -48,7 +48,7 @@ Sunrise::Sunrise()
 
 }
 
-void Sunrise::render(double time) {
+void Sunrise::render(double /*time*/) {
   render_init();
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);

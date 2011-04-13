@@ -1,34 +1,25 @@
-GENERAL=-Os -g -march=k8 -Wall -Wextra -std=c++0x
-CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL) -MMD -MP
-LDFLAGS=-lGLU -lGLEW $(GENERAL)
-#-lSDL_sound
+CXXFLAGS=`pkg-config --cflags sdl` -I. -I../common $(GENERAL_FLAGS) -MMD -MP
+LDFLAGS=-lGLU -lGLEW -lSDL_sound $(GENERAL_FLAGS)
 
-OBJECTS=main.o moduleloader.o gui.o
-PROGRAM=main
-SDLOBJECTS=sdlmain.o
-SDLPROGRAM=sdlmain
+STATIC=depthpeeling
 DYNOBJ=renderer.so
-DYNREQS=renderer.o mesh.o matrix.o logger.o globject.o glsupport.o phongmodel.o
-#IMAGES=$(patsubst %.svg,%.h,$(wildcard img/*.svg))
+DYNREQS=renderer.o
 
-all: $(PROGRAM) $(SDLPROGRAM) $(DYNOBJ)
+all: $(STATIC) $(DYNOBJ)
 
-$(SDLPROGRAM): $(SDLOBJECTS) $(DYNREQS)
+$(STATIC): $(DYNREQS) ../tool/sdlmain.o ../common/common.a 
 	$(CXX) `pkg-config --libs sdl` $(LDFLAGS) $^ -o $@
 
-$(PROGRAM): $(OBJECTS)
-	$(CXX) `pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(LDFLAGS) $^ -o $@
-
-$(DYNOBJ): $(DYNREQS)
+$(DYNOBJ): $(DYNREQS) ../common/common.a
 	$(CXX) -shared $(LDFLAGS) $^ -o $@
 
-$(DYNREQS): %.o: %.cpp #$(IMAGES)
+$(DYNREQS): %.o: %.cpp $(IMAGES)
 	$(CXX) -fPIC -c $(CXXFLAGS) $< -o $@
 
-#$(IMAGES): %.h: %.svg
-#	$(MAKE) -C img
+$(IMAGES): %.h: %.svg
+	$(MAKE) -C img
 
--include $(OBJECTS:.o=.d) $(DYNREQS:.o=.d)
+-include $(DYNREQS:.o=.d)
 
 clean:
-	rm -f $(PROGRAM) $(SDLPROGRAM) $(SDLOBJECTS) $(OBJECTS) $(DYNOBJ) $(DYNREQS) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~
+	rm -f $(STATIC) $(DYNOBJ) $(DYNREQS) $(DYNREQS:.o=.d) *~
