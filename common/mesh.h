@@ -2,6 +2,7 @@
 #define TT_MESH_H
 
 #include <vector>
+#include <string>
 
 #include "matrix.h"
 #include "types.h"
@@ -38,6 +39,7 @@ public:
 			 double const radius2, int const slices = 16);
 
   static Mesh createBall(double const radius, int const subdivisions);
+  static Mesh loadPly(std::string const &filename);
 
   ~Mesh();
 

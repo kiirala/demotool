@@ -221,7 +221,7 @@ void Gui::on_redraw() {
   if (gdk_gl_drawable_is_double_buffered(gl_drawable))
     gdk_gl_drawable_swap_buffers(gl_drawable);
   else
-    glFlush ();
+    glFlush();
 
   gdk_gl_drawable_gl_end(gl_drawable);
 }

@@ -1,33 +1,26 @@
-GENERAL=-Os -g -march=k8 -Wall -Wextra -std=c++0x
-CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL) -MMD -MP
-LDFLAGS=-lGLU -lGLEW -lSDL_sound $(GENERAL)
+export GENERAL_FLAGS=-Os -g -march=native -Wall -Wextra -std=c++0x -MMD -MP
 
-OBJECTS=main.o datastorage.o moduleloader.o gui.o
-PROGRAM=main
-SDLOBJECTS=sdlmain.o
-SDLPROGRAM=sdlmain
-DYNOBJ=renderer.so
-DYNREQS=renderer.o superformula.o mesh.o matrix.o logger.o globject.o texturepreview.o caleidoscope.o image.o triangulate.o sunrise.o
-IMAGES=$(patsubst %.svg,%.h,$(wildcard img/*.svg))
+PROGRAMS=main sdlmain.o
+PROJECTS=gospace
+COMMON=common/common.a
 
-all: $(PROGRAM) $(SDLPROGRAM) $(DYNOBJ)
+all: $(PROGRAMS) $(PROJECTS) $(COMMON)
 
-$(SDLPROGRAM): $(SDLOBJECTS) $(DYNREQS)
-	$(CXX) `pkg-config --libs sdl` $(LDFLAGS) $^ -o $@
+.PHONY: $(PROJECTS)
 
-$(PROGRAM): $(OBJECTS)
-	$(CXX) `pkg-config --libs gtkmm-2.4 gtkglext-1.0` $(LDFLAGS) $^ -o $@
+$(PROGRAMS):
+	$(MAKE) -C tool $@
+	cp tool/$@ .
 
-$(DYNOBJ): $(DYNREQS)
-	$(CXX) -shared $(LDFLAGS) $^ -o $@
+$(PROJECTS): $(COMMON) $(PROGRAMS)
+	$(MAKE) -C $@
 
-$(DYNREQS): %.o: %.cpp $(IMAGES)
-	$(CXX) -fPIC -c $(CXXFLAGS) $< -o $@
-
-$(IMAGES): %.h: %.svg
-	$(MAKE) -C img
-
--include $(OBJECTS:.o=.d) $(DYNREQS:.o=.d)
+$(COMMON):
+	$(MAKE) -C common
 
 clean:
-	rm -f $(PROGRAM) $(SDLPROGRAM) $(SDLOBJECTS) $(OBJECTS) $(DYNOBJ) $(DYNREQS) $(OBJECTS:.o=.d) $(DYNREQS:.o=.d) *~
+	rm -f $(PROGRAMS)
+	$(MAKE) -C tool clean
+	$(MAKE) -C common clean
+	for i in $(PROJECTS) ; do make -C $i clean ; done
+

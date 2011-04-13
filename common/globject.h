@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 
 #include "mesh.h"
+#include "types.h"
 
 #define logErrors() GLObject::logErrorsImpl(__FILE__, __LINE__)
 
@@ -25,6 +26,7 @@ public:
 
   virtual void render(double time) = 0;
   void render_init();
+  static void logErrorsImpl(char const *file, int const line);
 
 protected:
   Mesh mesh;
@@ -43,11 +45,12 @@ protected:
   void uniform(const char *name, GLfloat v1, GLfloat v2, GLfloat v3) {
     glUniform3f(get_param_pos(name), v1, v2, v3);
   }
+  void uniform(const char *name, Colour const &c) {
+    glUniform3f(get_param_pos(name), c.r, c.g, c.b);
+  }
   void uniform3(const char *name, GLfloat *v) {
     glUniform3fv(get_param_pos(name), 1, v);
   }
-
-  static void logErrorsImpl(char const *file, int const line);
 };
 
 

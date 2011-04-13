@@ -1,4 +1,7 @@
 #include <vector>
+#include <string>
+#include <iostream>
+#include <fstream>
 #include <cmath>
 #include <cstdio>
 #include <cassert>
@@ -286,6 +289,126 @@ Mesh Mesh::createCone(double const length, double const radius1,
 
     Vertex b(Point(x2, length, z2), normal);
     m.vertices.push_back(b);
+  }
+
+  return m;
+}
+
+struct int3 {
+  int a, b, c;
+};
+
+Mesh Mesh::loadPly(std::string const &filename) {
+  Mesh m;
+  m.type = TRIANGLES;
+
+  unsigned int vertex_count = 0;
+  unsigned int face_count = 0;
+  unsigned int vertex_property = 0;
+  unsigned int face_property = 0;
+  std::string last_element("");
+
+  std::ifstream in(filename);
+  std::string cmd, type, name;
+  in >> cmd;
+  if (cmd != "ply") {
+    error("File '%s' is not in PLY format - missing magic", filename.c_str());
+    return m;
+  }
+
+  while (in >> cmd) {
+    if (cmd == "end_header") {
+      break;
+    }
+    else if (cmd == "format") {
+      in >> type >> name;
+      if (type != "ascii") {
+	error("Non-ASCII PLY formats not supported");
+      }
+    }
+    else if (cmd == "comment") {
+      std::getline(in, type);
+    }
+    else if (cmd == "element") {
+      int count;
+      in >> type >> count;
+      last_element = type;
+      if (type == "vertex")
+	vertex_count = count;
+      else if (type == "face")
+	face_count = count;
+      else
+	warn("Unknown element type %s", type.c_str());
+    }
+    else if (cmd == "property") {
+      if (last_element == "vertex")
+	vertex_property++;
+      else if (last_element == "face")
+	face_property++;
+      std::getline(in, type);
+    }
+    else {
+      warn("Unknown command '%s'", cmd.c_str());
+    }
+  }
+
+  if (vertex_property < 3) {
+    error("Too few parameters for vertices in PLY import -- x, y and z coordinates required");
+    return m;
+  }
+  if (face_property != 1) {
+    error("PLY import can only handle faces with one property");
+    return m;
+  }
+
+  Point vertices[vertex_count];
+  for (unsigned int i = 0 ; i < vertex_count ; ++i) {
+    double x, y, z;
+    in >> x >> y >> z;
+    vertices[i].set(x, y, z);
+    for (unsigned int foo = 3 ; foo < vertex_property ; ++foo)
+      in >> cmd;
+  }
+
+  int3 faces[face_count];
+  for (unsigned int i = 0 ; i < face_count ; ++i) {
+    int count, a, b, c;
+    in >> count;
+    if (count != 3) {
+      warn("Face with %d vertices - only triangles supported", count);
+      for (int foo = 0 ; foo < count ; ++foo)
+	in >> a;
+    }
+    else {
+      in >> a >> b >> c;
+      faces[i].a = a;
+      faces[i].b = b;
+      faces[i].c = c;
+    }
+  }
+
+  Point normals[vertex_count];
+  for (unsigned int i = 0 ; i < face_count ; ++i) {
+    Point &a = vertices[faces[i].a];
+    Point &b = vertices[faces[i].b];
+    Point &c = vertices[faces[i].c];
+    Point face_n = (b - a).cross(c - a);
+    face_n.normalize();
+    normals[faces[i].a] += face_n;
+    normals[faces[i].b] += face_n;
+    normals[faces[i].c] += face_n;
+  }
+  for (unsigned int i = 0 ; i < vertex_count ; ++i) {
+    normals[i].normalize();
+  }
+
+  for (unsigned int i = 0 ; i < face_count ; ++i) {
+    Vertex a(vertices[faces[i].a], normals[faces[i].a]);
+    Vertex b(vertices[faces[i].b], normals[faces[i].b]);
+    Vertex c(vertices[faces[i].c], normals[faces[i].c]);
+    m.vertices.push_back(a);
+    m.vertices.push_back(b);
+    m.vertices.push_back(c);
   }
 
   return m;

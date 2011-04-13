@@ -1,11 +1,9 @@
 #ifndef DEMOTOOL_MODULELOADER_H
 #define DEMOTOOL_MODULELOADER_H
 
-class DataStorage;
-
 class ModuleLoader {
 public:
-  ModuleLoader(DataStorage &ds);
+  ModuleLoader();
   ~ModuleLoader();
 
   void* load(const char* filename);
@@ -13,7 +11,6 @@ public:
   void unload(void* lib);
 
 private:
-  DataStorage &data;
 
 };
 

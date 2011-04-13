@@ -114,8 +114,10 @@ GLObject::GLObject(Mesh mesh, char const *vert, char const *frag, ShaderParams p
     ++n;
   }
 
+  logErrors();
   glLinkProgram(shader_prog);
   printInfoLog(shader_prog);
+  logErrors();
 }
 
 void GLObject::render_init() {
