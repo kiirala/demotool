@@ -1,0 +1,38 @@
+DEMOTOOL + GO SPACE
+===================
+
+Demotool: helps in creating non-interactive demos. The code behind the
+	  demo can be modified, recompiled and reloaded without
+	  closing the window that shows the resulting image.
+
+Go Space: a demo published at Alternative Party 2010
+
+Requirements
+============
+
+Packages required by the demotool:
+  gtkmm    (C++ interface for GTK+)
+  gtkglext (OpenGL support for GTK+)
+
+Packages required by stand-alone demo player:
+  SDL      (Simple DirectMedia Layer)
+
+Packages required by all demos:
+  GLU      (OpenGL Utility Library)
+  GLEW     (OpenGL Extension Wrangler)
+
+Packages specifically required by Go Space:
+  SDL_sound with XM support (sound/music extension for SDL)
+
+Compiling and usage
+===================
+
+To compile, type "make". This will compile the common parts and any
+projects defined in top-level Makefile.
+
+To run a project in demotool, go to project directory after compiling
+and run "../demotool". The demotool will find file renderer.so in
+current directory and use it to render frames of the demo.
+
+The stand-alone version of a project is created in the project
+directory. Run this as you usually would.
