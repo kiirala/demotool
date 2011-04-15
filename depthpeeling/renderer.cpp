@@ -18,7 +18,7 @@ int const aspectratio_w = 16;
 int const aspectratio_h = 9;
 
 GLuint *texture;
-const GLint texture_format[] = {GL_RGBA, GL_RGBA/*GL_DEPTH_COMPONENT*/};
+const GLint texture_format[] = {GL_RGBA, GL_DEPTH_COMPONENT};
 const int texture_count = 2;
 GLuint fbo;
 int viewport[4];
@@ -128,7 +128,7 @@ void load() {
     //		 GL_RGBA, GL_UNSIGNED_BYTE, 0);
     logGL();
     glTexImage2D(GL_TEXTURE_2D, 0, texture_format[i], 512, 512, 0,
-		 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		 texture_format[i], GL_UNSIGNED_BYTE, 0);
     logGL();
   }
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -138,8 +138,8 @@ void load() {
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			 GL_TEXTURE_2D, texture[0], 0);
-  //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-  //			 GL_TEXTURE_2D, texture[1], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+  			 GL_TEXTURE_2D, texture[1], 0);
   logGL();
 
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
