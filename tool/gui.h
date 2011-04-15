@@ -1,12 +1,14 @@
 #ifndef DEMOTOOL_GUI_H
 #define DEMOTOOL_GUI_H
 
+#include <string>
+
 class ModuleLoader;
 class Window;
 
 class Gui {
 public:
-  Gui(ModuleLoader &ml);
+  Gui(ModuleLoader &ml, std::string const &project);
 
   void run();
 
@@ -19,6 +21,7 @@ private:
 
   ModuleLoader &loader;
   Window &win;
+  std::string const &project;
   void *renderer_lib;
   void (*render)(double time);
   void (*resize)(int width, int height);

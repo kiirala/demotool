@@ -30,9 +30,9 @@ Compiling and usage
 To compile, type "make". This will compile the common parts and any
 projects defined in top-level Makefile.
 
-To run a project in demotool, go to project directory after compiling
-and run "../demotool". The demotool will find file renderer.so in
-current directory and use it to render frames of the demo.
+To run a project in demotool, run "./demotool projectname". The demotool 
+will find file renderer.so in the specified directory and use it to 
+render frames of the demo.
 
 The stand-alone version of a project is created in the project
 directory. Run this as you usually would.

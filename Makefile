@@ -4,7 +4,9 @@ PROGRAMS=main sdlmain.o
 PROJECTS=gospace depthpeeling
 COMMON=common/common.a
 
-all: $(PROGRAMS) $(PROJECTS) $(COMMON)
+all: demotool $(PROGRAMS) $(PROJECTS) $(COMMON)
+
+demotool: tool/main
 	cp tool/main demotool
 
 .PHONY: $(PROGRAMS) $(PROJECTS) $(COMMON) clean

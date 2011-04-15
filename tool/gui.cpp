@@ -1,8 +1,11 @@
+#include <string>
+
 #include <gtkmm.h>
 #include <gtk/gtkgl.h>
 #include <gdk/gdkgl.h>
 #include <GL/gl.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "gui.h"
 #include "moduleloader.h"
@@ -167,9 +170,14 @@ public:
 
 };
 
-Gui::Gui(ModuleLoader &ml)
-  : loader(ml), win(*(new Window(ml))), render(0), resize(0)
+Gui::Gui(ModuleLoader &ml, std::string const &project)
+  : loader(ml), win(*(new Window(ml))), project(project), render(0), resize(0)
 {
+  int ret = chdir(project.c_str());
+  if (ret != 0) {
+    perror("Can't change directory");
+    fprintf(stderr, "Failed to load project %s\n", project.c_str());
+  }
   win.signal_reload.connect(sigc::mem_fun(*this, &Gui::on_reload));
   win.signal_build.connect(sigc::mem_fun(*this, &Gui::on_build));
   win.signal_resize.connect(sigc::mem_fun(*this, &Gui::on_resize));
@@ -180,7 +188,7 @@ Gui::Gui(ModuleLoader &ml)
 }
 
 bool Gui::on_build() {
-  int status = system("make");
+  int status = system("make -C ..");
   if (status < 0 || WEXITSTATUS(status) != 0)
     return false;
   return true;
@@ -227,7 +235,7 @@ void Gui::on_redraw() {
 }
 
 void Gui::load_libs() {
-  void* renderer = loader.load("./renderer.so");
+  void* renderer = loader.load("renderer.so");
   render = (void (*)(double))loader.get(renderer, "render");
   resize = (void (*)(int, int))loader.get(renderer, "resize");
   renderer_lib = renderer;
