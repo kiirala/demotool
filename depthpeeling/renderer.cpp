@@ -32,7 +32,7 @@ public:
   Scene()
     : bunny(Mesh::loadPly("bun_zipper.ply"),
 	    Colour(228.0/255, 147/255.0, 73/255.0),
-	    0.1, 0.7, 2.0, 2.0)
+	    0.1, 0.7, 0.3, 8.0)
   {
   }
 
@@ -41,7 +41,19 @@ public:
     logErrors();
     normal_projection();
     logErrors();
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
+    double scale = 100;
+    glScaled(scale, scale, scale);
+    glTranslated(0, -0.1, 0);
+
+    float pos[] = {1, 1, 2, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, pos);
+
+    glRotated(time * 3, 0, 1, 0);
     bunny.render(time);
+    logErrors();
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 
@@ -189,8 +201,9 @@ void render(double time) {
   // glRotatef (ang, 0, 0, 1);
 
   glShadeModel(GL_FLAT);
-  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
   glDisable(GL_TEXTURE_2D);
+  glDisable(GL_LIGHTING);
   glUseProgram(0);
 
   glBegin (GL_LINES);
