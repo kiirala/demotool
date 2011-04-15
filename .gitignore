@@ -1,0 +1,8 @@
+*.d
+*.o
+demotool
+tool/main
+common/common.a
+*/renderer.so
+gospace/gospace
+depthpeeling/depthpeeling
