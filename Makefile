@@ -9,13 +9,15 @@ all: demotool $(PROGRAMS) $(PROJECTS) $(COMMON)
 demotool: tool/main
 	cp tool/main demotool
 
+tool/main: main ;
+
 .PHONY: $(PROGRAMS) $(PROJECTS) $(COMMON) clean
 
 $(PROGRAMS):
 	$(MAKE) -C tool $@
 
 $(PROJECTS): $(COMMON) $(PROGRAMS)
-	$(MAKE) -C $@
+	-$(MAKE) -C $@
 
 $(COMMON):
 	$(MAKE) -C common
