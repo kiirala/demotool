@@ -31,17 +31,13 @@ class Scene {
 public:
   int screen_width, screen_height;
 
-  PhongModel bunny;
   Edges edges;
 
   PhongModel *tree;
   Mesh *treeMesh;
 
   Scene()
-    : bunny(Mesh::loadPly("bun_zipper.ply"),
-	    Colour(228.0/255, 147/255.0, 73/255.0),
-	    0.1, 0.7, 0.3, 8.0),
-      edges(), tree(0), treeMesh(0)
+    : edges(), tree(0), treeMesh(0)
   {
     Matrix baseTrans;
     createTree(5, 100, baseTrans);
@@ -100,7 +96,6 @@ public:
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
     glRotated(time * 3, 0, 1, 0);
-    //bunny.render(time);
     tree->render(time);
     logErrors();
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
