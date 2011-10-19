@@ -68,7 +68,7 @@ void PhongModel::render(double /*time*/) {
   uniform("shininess", shininess);
   uniform("colour", colour);
 
-  glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
+  glDrawArrays(mesh.meshType(), 0, mesh.vertexCount());
 
   logErrors();
 }

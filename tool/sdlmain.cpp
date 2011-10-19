@@ -13,7 +13,7 @@ extern "C" void unload();
 extern "C" void render(double time);
 extern "C" void resize(int width, int height);
 
-static bool fullscreen = true;
+static bool fullscreen = false;
 static int scrWidth = 1280;
 static int scrHeight = 720;
 static const int scrBPP = 32;

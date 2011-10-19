@@ -13,6 +13,10 @@ public:
     CW, CCW
   };
 
+  Mesh(Mesh const &other);
+  
+  void append(Mesh const &other);
+
   void setColour(double r, double g, double b) {
     colour.set(r, g, b);
   }
@@ -24,6 +28,8 @@ public:
   GLfloat *colourArray();
   GLfloat *normalArray();
   GLfloat *texcoordArray();
+
+  GLuint meshType();
 
   void addVertex(Point pos, Point normal);
   void addColour(Colour colour);

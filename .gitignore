@@ -6,3 +6,4 @@ common/common.a
 */renderer.so
 gospace/gospace
 depthpeeling/depthpeeling
+nonrealistic/nonrealistic

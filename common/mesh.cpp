@@ -19,6 +19,14 @@ Mesh::Mesh()
   colour.set(0.0, 0.0, 0.0);
 }
 
+Mesh::Mesh(Mesh const &other)
+  : type(other.type), colour(other.colour),
+    vertices(other.vertices), texcoords(other.texcoords),
+    colours(other.colours),
+    v_array(0), col_array(0), n_array(0), texcoord_array(0)
+{
+}
+
 Mesh::~Mesh() {
   delete [] v_array;
   delete [] n_array;
@@ -569,4 +577,56 @@ Mesh Mesh::createBall(double const radius, int const subdivisions) {
   }
 
   return m;
+}
+
+GLuint Mesh::meshType() {
+  switch (this->type) {
+  case TRIANGLES:
+    return GL_TRIANGLES;
+  case TRIANGLE_STRIP:
+    return GL_TRIANGLE_STRIP;
+  case TRIANGLE_FAN:
+    return GL_TRIANGLE_FAN;
+  }
+  return GL_TRIANGLES;
+}
+
+void Mesh::append(Mesh const &other) {
+  assert(this->type == other.type);
+
+  if (this->type != TRIANGLES) {
+    if (this->vertices.size() > 0 && other.vertices.size() > 0) {
+      Vertex v1 = this->vertices.back();
+      Vertex v2 = other.vertices.front();
+      this->vertices.push_back(v1);
+      this->vertices.push_back(v2);
+    }
+    if (this->texcoords.size() > 0 && other.texcoords.size() > 0) {
+      Point v1 = this->texcoords.back();
+      Point v2 = other.texcoords.front();
+      this->texcoords.push_back(v1);
+      this->texcoords.push_back(v2);
+    }
+    if (this->colours.size() > 0 && other.colours.size() > 0) {
+      Colour v1 = this->colours.back();
+      Colour v2 = other.colours.front();
+      this->colours.push_back(v1);
+      this->colours.push_back(v2);
+    }    
+  }
+
+  for (std::vector<Vertex>::const_iterator i = other.vertices.begin() ;
+       i != other.vertices.end() ; ++i) {
+    this->vertices.push_back(*i);
+  }
+
+  for (std::vector<Point>::const_iterator i = other.texcoords.begin() ;
+       i != other.texcoords.end() ; ++i) {
+    this->texcoords.push_back(*i);
+  }
+
+  for (std::vector<Colour>::const_iterator i = other.colours.begin() ;
+       i != other.colours.end() ; ++i) {
+    this->colours.push_back(*i);
+  }
 }
