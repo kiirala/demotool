@@ -10,6 +10,7 @@
 
 #include "phongmodel.h"
 #include "edges.h"
+#include "noise.h"
 
 extern "C" void load();
 extern "C" void unload();
@@ -35,6 +36,8 @@ public:
 
   PhongModel *tree;
   Mesh *treeMesh;
+  
+  PhongModel *ground;
 
   Scene()
     : edges(), tree(0), treeMesh(0)
@@ -44,6 +47,18 @@ public:
     tree = new PhongModel(*treeMesh,
 			  Colour(228/255.0, 147/255.0, 73/255.0),
 			  0.1, 0.7, 0.3, 8.0);
+
+    double heightmap[512 * 512];
+    perlin(heightmap, 512, 512);
+    ground = new PhongModel(Mesh::createHeightMap(heightmap, 512, 512),
+			    Colour(122/255.0, 133/255.0, 43/255.0),
+			    0.1, 0.7, 0.3, 8.0);
+  }
+
+  ~Scene() {
+    delete tree;
+    delete treeMesh;
+    delete ground;
   }
 
   void createTree(int depth, int thickness, Matrix const &transform) {
@@ -95,13 +110,19 @@ public:
     float pos[] = {1, 1, 2, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
+    glRotated(10, 1, 0, 0);
     glRotated(time * 3, 0, 1, 0);
     tree->render(time);
+
+    glScaled(0.1, 0.3, 0.1);
+    glTranslated(-256, 0, -256);
+    ground->render(time);
+
     logErrors();
     //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
     selectRenderTexture(0);
-    edges.texture = texture[1];
+    edges.colour_texture = texture[0];
+    edges.depth_texture = texture[1];
     edges.render(time);
   }
 

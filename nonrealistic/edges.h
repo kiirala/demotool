@@ -10,7 +10,8 @@ public:
 
   void render(double time);
 
-  GLuint texture;
+  GLuint colour_texture;
+  GLuint depth_texture;
 
 private:
 

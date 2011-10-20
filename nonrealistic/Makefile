@@ -3,7 +3,7 @@ LDFLAGS=-lGLU -lGLEW -lSDL_sound $(GENERAL_FLAGS)
 
 STATIC=nonrealistic
 DYNOBJ=renderer.so
-DYNREQS=renderer.o edges.o
+DYNREQS=renderer.o edges.o noise.o
 
 all: $(STATIC) $(DYNOBJ)
 

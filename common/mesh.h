@@ -46,6 +46,7 @@ public:
 
   static Mesh createBall(double const radius, int const subdivisions);
   static Mesh loadPly(std::string const &filename);
+  static Mesh createHeightMap(double const *heights, int width, int height);
 
   ~Mesh();
 

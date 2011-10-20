@@ -630,3 +630,25 @@ void Mesh::append(Mesh const &other) {
     this->colours.push_back(*i);
   }
 }
+
+Mesh Mesh::createHeightMap(double const *heights, int width, int height) {
+  Mesh m;
+  m.type = TRIANGLE_STRIP;
+
+  for (int z = 0 ; z < height - 1 ; ++z) {
+    for (int x = 0 ; x < width ; ++x) {
+      double val_y1 = heights[z * width + x];
+      double val_y2 = heights[(z + 1) * width + x];
+      Point normal(0, 1, 0); // TODO
+      Vertex a(Point(x, val_y1, z), normal);
+      Vertex b(Point(x, val_y2, z + 1), normal);
+      if (x == 0 && z > 0)
+	m.vertices.push_back(a);
+      m.vertices.push_back(a);
+      m.vertices.push_back(b);
+      if (x == width - 1 && z < height - 2)
+	m.vertices.push_back(b);
+    }    
+  }
+  return m;
+}
