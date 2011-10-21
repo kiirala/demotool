@@ -1,4 +1,4 @@
-CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL_FLAGS) -MMD -MP
+CXXFLAGS=`pkg-config --cflags gtkmm-2.4 gtkglext-1.0 sdl` -I. $(GENERAL_FLAGS)
 LDFLAGS=$(GENERAL_FLAGS)
 
 OBJECTS=main.o moduleloader.o gui.o

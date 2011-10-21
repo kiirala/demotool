@@ -1,13 +1,13 @@
-CXXFLAGS=`pkg-config --cflags sdl` -I. -I../common $(GENERAL_FLAGS) -MMD -MP
-LDFLAGS=-lGLU -lGLEW -lSDL_sound $(GENERAL_FLAGS)
+CXXFLAGS=`pkg-config --cflags sdl` -I. $(GENERAL_FLAGS)
+LDFLAGS=-lGLU -lGLEW $(GENERAL_FLAGS)
 
 STATIC=nonrealistic
 DYNOBJ=renderer.so
-DYNREQS=renderer.o edges.o noise.o
+DYNREQS=renderer.o edges.o noise.o globject.o glsupport.o logger.o matrix.o mesh.o phongmodel.o
 
 all: $(STATIC) $(DYNOBJ)
 
-$(STATIC): $(DYNREQS) ../tool/sdlmain.o ../common/common.a 
+$(STATIC): $(DYNREQS) sdlmain.o
 	$(CXX) `pkg-config --libs sdl` $(LDFLAGS) $^ -o $@
 
 $(DYNOBJ): $(DYNREQS) ../common/common.a
