@@ -1,4 +1,5 @@
-export GENERAL_FLAGS=-Os -g -march=native -Wall -Wextra -std=c++0x -MMD -MP
+export GENERAL_FLAGS=-Os -g -march=native -Wall -Wextra -std=c++0x
+#-MMD -MP
 
 PROGRAMS=main sdlmain.o
 PROJECTS=gospace depthpeeling nonrealistic

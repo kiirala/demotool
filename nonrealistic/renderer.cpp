@@ -36,17 +36,23 @@ public:
 
   PhongModel *tree;
   Mesh *treeMesh;
+
+  PhongModel *leaves;
+  Mesh *leafMesh;
   
   PhongModel *ground;
 
   Scene()
-    : edges(), tree(0), treeMesh(0)
+    : edges(), tree(0), treeMesh(0), leaves(0), leafMesh(0)
   {
     Matrix baseTrans;
     createTree(5, 100, baseTrans);
     tree = new PhongModel(*treeMesh,
 			  Colour(228/255.0, 147/255.0, 73/255.0),
 			  0.1, 0.7, 0.3, 8.0);
+    leaves = new PhongModel(*leafMesh,
+			    Colour(169/255.0, 245/255.0, 58/255.0),
+			    0.1, 0.7, 0.3, 8.0);
 
     double heightmap[512 * 512];
     perlin(heightmap, 512, 512);
@@ -58,12 +64,14 @@ public:
   ~Scene() {
     delete tree;
     delete treeMesh;
+    delete leaves;
+    delete leafMesh;
     delete ground;
   }
 
   void createTree(int depth, int thickness, Matrix const &transform) {
     const int branch_factor = 3;
-    printf("tree depth %d, thickness %d\n", depth, thickness);
+    //printf("tree depth %d, thickness %d\n", depth, thickness);
 
     double length = (log(thickness) + 1) / 8.0;
     Mesh modelMesh = Mesh::createCone(length,
@@ -81,15 +89,26 @@ public:
     Matrix baseTransform = transform
       .transform(0.0, length, 0.0);
     
-    if (depth == 0 || thickness <= 1) return;
-
-    int branch_thickness = thickness / branch_factor +
-      ((thickness % branch_factor) ? 1 : 0);
-    for (int i = 0; i < branch_factor ; ++i) {
-      Matrix trans = baseTransform
-	.rotate(i * (2 * M_PI / branch_factor), 0.0, 1.0, 0.0)
-	.rotate(1.0, 1.0, 0.0, 0.0);
-      createTree(depth - 1, branch_thickness, trans);
+    if (depth == 0 || thickness <= 1) {
+      for (int i = 0 ; i < branch_factor ; ++i) {
+	Mesh leaf = Mesh::createBall(sqrt((double)thickness / branch_factor) / 10.0, 1);
+	Matrix trans = baseTransform
+	  .rotate(i * (2 * M_PI / branch_factor), 0.0, 1.0, 0.0)
+	  .transform(length / 2.0, 0.0, 0.0);
+	leaf.transform(trans);
+	if (leafMesh) leafMesh->append(leaf);
+	else leafMesh = new Mesh(leaf);
+      }
+    }
+    else {
+      int branch_thickness = thickness / branch_factor +
+	((thickness % branch_factor) ? 1 : 0);
+      for (int i = 0; i < branch_factor ; ++i) {
+	Matrix trans = baseTransform
+	  .rotate(i * (2 * M_PI / branch_factor), 0.0, 1.0, 0.0)
+	  .rotate(1.0, 1.0, 0.0, 0.0);
+	createTree(depth - 1, branch_thickness, trans);
+      }
     }
   }
 
@@ -113,6 +132,7 @@ public:
     glRotated(10, 1, 0, 0);
     glRotated(time * 3, 0, 1, 0);
     tree->render(time);
+    leaves->render(time);
 
     glScaled(0.1, 0.3, 0.1);
     glTranslated(-256, 0, -256);

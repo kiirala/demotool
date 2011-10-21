@@ -635,18 +635,27 @@ Mesh Mesh::createHeightMap(double const *heights, int width, int height) {
   Mesh m;
   m.type = TRIANGLE_STRIP;
 
-  for (int z = 0 ; z < height - 1 ; ++z) {
-    for (int x = 0 ; x < width ; ++x) {
+  for (int z = 1 ; z < height - 2 ; ++z) {
+    for (int x = 1 ; x < width - 1 ; ++x) {
       double val_y1 = heights[z * width + x];
       double val_y2 = heights[(z + 1) * width + x];
-      Point normal(0, 1, 0); // TODO
-      Vertex a(Point(x, val_y1, z), normal);
-      Vertex b(Point(x, val_y2, z + 1), normal);
-      if (x == 0 && z > 0)
+      Point tangent_az = Point(x, heights[(z + 1) * width + x], z + 1) -
+	Point(x, heights[(z - 1) * width + x], z - 1);
+      Point tangent_ax = Point(x + 1, heights[z * width + x + 1], z) -
+	Point(x - 1, heights[z * width + x - 1], z);
+      Point normal_a = tangent_az.cross(tangent_ax);
+      Point tangent_bz = Point(x, heights[(z + 2) * width + x], z + 2) -
+	Point(x, heights[z * width + x], z);
+      Point tangent_bx = Point(x + 1, heights[(z + 1) * width + x + 1], z + 1) -
+	Point(x - 1, heights[(z + 1) * width + x - 1], z + 1);
+      Point normal_b = tangent_bz.cross(tangent_bx);
+      Vertex a(Point(x, val_y1, z), normal_a);
+      Vertex b(Point(x, val_y2, z + 1), normal_b);
+      if (x == 1 && z > 1)
 	m.vertices.push_back(a);
       m.vertices.push_back(a);
       m.vertices.push_back(b);
-      if (x == width - 1 && z < height - 2)
+      if (x == width - 2 && z < height - 3)
 	m.vertices.push_back(b);
     }    
   }

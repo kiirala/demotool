@@ -80,7 +80,7 @@ const char *fragment_shader =
 "               - texture2D(depth, texcoord + dx + dy);\n"
 "    vec4 base_col = texture2D(colour, texcoord);\n"
   // Add sky
-"    base_col = mix(vec4(150.0/255.0, 202.0/255.0, 240.0/255.0, 1.0), base_col, base_col.a);\n"
+"    base_col = mix(mix(vec4(151/255.0, 175/255.0, 206/255.0, 1.0), vec4(106.0/255.0, 240.0/255.0, 255.0/255.0, 1.0), texcoord.y), base_col, base_col.a);\n"
 
 "    vec3 hsl = rgb_to_hsl(base_col);\n"
   // Lightness quantization
