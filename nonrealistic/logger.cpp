@@ -19,5 +19,5 @@ void Logger::message(char const *fname, int const line, int const level,
 
 void Logger::glerror(char const *fname, int const line, GLenum const error) {
   fprintf(stderr, "GL error %d at %s:%d: %s\n", error, fname, line,
-	  gluErrorString(error));
+	  ""/*gluErrorString(error)*/);
 }

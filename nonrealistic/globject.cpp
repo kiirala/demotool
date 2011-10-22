@@ -1,9 +1,6 @@
 #include <cstdio>
 #include <cassert>
-#include <string>
-#include <unordered_map>
 #include <GL/glew.h>
-#include <GL/glu.h>
 
 #include "globject.h"
 #include "mesh.h"
@@ -139,22 +136,6 @@ GLObject::~GLObject() {
 }
 
 GLint GLObject::get_param_pos(const char *name) {
-  /*
-  std::unordered_map<std::string,GLint>::iterator loc = shader_parameters.find(name);
-  GLint handle;
-  if (loc == shader_parameters.end()) {
-    handle = glGetUniformLocation(shader_prog, name.c_str());
-    if (handle < 0) {
-      error("Shader parameter not found");
-      return -1;
-    }
-    shader_parameters[name] = handle;
-  }
-  else {
-    handle = loc->second;
-  }
-  return handle;
-  */
   return glGetUniformLocation(shader_prog, name);
 }
 
@@ -162,6 +143,6 @@ void GLObject::logErrorsImpl(char const *file, int const line) {
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
     fprintf(stderr, "GL error %d at %s:%d: %s\n",
-	    err, file, line, gluErrorString(err));
+	    err, file, line, ""/*gluErrorString(err)*/);
   }
 }

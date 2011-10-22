@@ -79,8 +79,12 @@ const char *fragment_shader =
 "               - texture2D(depth, texcoord + dx - dy)\n"
 "               - texture2D(depth, texcoord + dx + dy);\n"
 "    vec4 base_col = texture2D(colour, texcoord);\n"
+"    vec4 bg;\n"
+"    float cutoff = 0.7;\n"
+"    if (texcoord.y > cutoff) bg = mix(vec4(171.0/255.0, 198.0/255.0, 210.0/255.0, 1.0), vec4(30.0/255.0, 238.0/255.0, 255.0/255.0, 1.0), (texcoord.y - cutoff) * 2.0);\n"
+"    else bg = mix(vec4(41.0/255.0, 43.0/255.0, 246.0/255.0, 1.0), vec4(171.0/255.0, 177.0/255.0, 210.0/255.0, 1.0), (texcoord.y - 0.2) * 2.0);\n"
   // Add sky
-"    base_col = mix(mix(vec4(151/255.0, 175/255.0, 206/255.0, 1.0), vec4(106.0/255.0, 240.0/255.0, 255.0/255.0, 1.0), texcoord.y), base_col, base_col.a);\n"
+"    base_col = mix(bg, base_col, base_col.a);\n"
 
 "    vec3 hsl = rgb_to_hsl(base_col);\n"
   // Lightness quantization
@@ -120,7 +124,7 @@ void Edges::render(double /*time*/) {
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, depth_texture);
 
-  glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
+  glDrawArrays(mesh.meshType(), 0, mesh.vertexCount());
 
   logErrors();
   glActiveTexture(GL_TEXTURE0);

@@ -2,7 +2,6 @@
 #define DEMOTOOL_GLOBJECT_H
 
 #include <string>
-#include <unordered_map>
 #include <GL/glew.h>
 
 #include "mesh.h"

@@ -10,19 +10,14 @@
 extern "C" void load();
 extern "C" void unload();
 extern "C" void render(double time);
+extern "C" void simpleRender();
 extern "C" void resize(int width, int height);
 
-static bool fullscreen = false;
+static bool fullscreen = true;
 static int scrWidth = 1280;
 static int scrHeight = 720;
 static const int scrBPP = 32;
 //static const char *font_file = "/usr/share/fonts/ttf-bitstream-vera/Vera.ttf";
-
-/*
- * This variable is flipped to non-zero when the audio callback has
- *  finished playing the whole file.
- */
-static volatile int global_done_flag = 0;
 
 void init_sdl() {
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
@@ -92,12 +87,14 @@ int main(int argc, char ** argv) {
   SDL_ShowCursor(SDL_DISABLE);
 
   SDL_Event event;
+  /*
   uint32_t last_draw = 0;
   uint32_t drawn = 0;
   uint32_t start = SDL_GetTicks();
+  */
   bool running = true;
 
-  while (running && !global_done_flag) {
+  while (running /*&& !global_done_flag*/) {
     while (SDL_PollEvent(&event)) {
       switch( event.type ) {
       case SDL_KEYDOWN:
@@ -113,19 +110,19 @@ int main(int argc, char ** argv) {
       }
     }
     
-    uint32_t time = SDL_GetTicks();
-    render(time / 1000.0);
+    //uint32_t time = SDL_GetTicks();
+    simpleRender();
     SDL_GL_SwapBuffers();
-    last_draw = time;
-    drawn++;
-    if (time > 80 * 1000) running = false;
+    //last_draw = time;
+    //drawn++;
+    //if (time > 80 * 1000) running = false;
   }
-
+  /*
   uint32_t end = SDL_GetTicks();
   double runtime = (end - start) / 1000.0;
   fprintf(stderr, "Drawn %u frames\n", drawn);
   fprintf(stderr, "Runtime %.2f s, %.2f fps drawn\n",
 	  runtime, drawn / runtime);
-
+  */
   return 0;
 }

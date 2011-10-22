@@ -1,11 +1,23 @@
 #ifndef TT_MESH_H
 #define TT_MESH_H
 
-#include <vector>
+//#include <vector>
 #include <string>
 
 #include "matrix.h"
 #include "types.h"
+
+class VertexList {
+public:
+  Vertex *items;
+  int count;
+  int capacity;
+
+  VertexList();
+  VertexList(VertexList const &other);
+  ~VertexList();
+  void addVertex(Vertex const &v);
+};
 
 class Mesh {
 public:
@@ -48,7 +60,7 @@ private:
     TRIANGLE_FAN,
     TRIANGLE_STRIP
   } type;
-  std::vector<Vertex> vertices;
+  VertexList vertices;
   GLfloat *v_array;
   GLfloat *n_array;
   GLfloat *texcoord_array;

@@ -1,0 +1,18 @@
+Some trees by Niko Kiirala
+==========================
+
+Entry for executable graphics competition at Alternative Party 2011
+
+Platform: Linux x86_64
+
+Program accepts the followind command line options:
+  -f             fullscreen
+  -w             windowed
+  -s 1280x720    screen resolution
+
+Uses the following packages:
+SDL  (Simple DirectMedia Layer)
+GL   (OpenGL libraries)
+GLEW (GL Extension Wrangler)
+
+Sources available at GitHub: https://github.com/kiirala/demotool

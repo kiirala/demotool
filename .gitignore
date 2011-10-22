@@ -1,5 +1,8 @@
 *.d
 *.o
+*.gz
+*.bz2
+core
 demotool
 tool/main
 common/common.a
@@ -7,3 +10,6 @@ common/common.a
 gospace/gospace
 depthpeeling/depthpeeling
 nonrealistic/nonrealistic
+nonrealistic/asmtree
+nonrealistic/sdlsmall
+nonrealistic/smalltree

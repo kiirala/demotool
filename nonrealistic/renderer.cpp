@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/glew.h>
-
-#include <vector>
+#include <SDL.h>
 
 #include "logger.h"
 #include "glsupport.h"
@@ -15,7 +14,12 @@
 extern "C" void load();
 extern "C" void unload();
 extern "C" void render(double time);
+extern "C" void simpleRender();
 extern "C" void resize(int width, int height);
+
+void simpleRender() {
+  render(2.0);
+}
 
 static void selectRenderTexture(int num);
 
@@ -43,7 +47,7 @@ public:
   PhongModel *ground;
 
   Scene()
-    : edges(), tree(0), treeMesh(0), leaves(0), leafMesh(0)
+    : edges(), tree(0), treeMesh(0), leaves(0), leafMesh(0), ground(0)
   {
     Matrix baseTrans;
     createTree(5, 100, baseTrans);
@@ -54,11 +58,12 @@ public:
 			    Colour(169/255.0, 245/255.0, 58/255.0),
 			    0.1, 0.7, 0.3, 8.0);
 
-    double heightmap[512 * 512];
+    double *heightmap = new double[512 * 512];
     perlin(heightmap, 512, 512);
     ground = new PhongModel(Mesh::createHeightMap(heightmap, 512, 512),
 			    Colour(122/255.0, 133/255.0, 43/255.0),
 			    0.1, 0.7, 0.3, 8.0);
+    delete [] heightmap;
   }
 
   ~Scene() {
@@ -91,7 +96,7 @@ public:
     
     if (depth == 0 || thickness <= 1) {
       for (int i = 0 ; i < branch_factor ; ++i) {
-	Mesh leaf = Mesh::createBall(sqrt((double)thickness / branch_factor) / 10.0, 1);
+	Mesh leaf = Mesh::createBall(sqrt((double)thickness / branch_factor) / 10.0, 0);
 	Matrix trans = baseTransform
 	  .rotate(i * (2 * M_PI / branch_factor), 0.0, 1.0, 0.0)
 	  .transform(length / 2.0, 0.0, 0.0);
@@ -129,10 +134,21 @@ public:
     float pos[] = {1, 1, 2, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
 
-    glRotated(10, 1, 0, 0);
-    glRotated(time * 3, 0, 1, 0);
-    tree->render(time);
-    leaves->render(time);
+    glRotated(5, 1, 0, 0);
+
+    float tree_pos[] = {-1.6, 0, 0, 10, 1.0,
+			1.8, 0, -4, 111, 1.0,
+			0.7, 0, -10, 48, 0.5,
+			-0.6, 0.05, -14, 92, 0.3};
+    for (int i = 0 ; i < 4 ; ++i) {
+      glPushMatrix();
+      glTranslated(tree_pos[i * 5], tree_pos[i * 5 + 1], tree_pos[i * 5 + 2]);
+      glScaled(tree_pos[i * 5 + 4], tree_pos[i * 5 + 4], tree_pos[i * 5 + 4]);
+      glRotated(tree_pos[i * 5 + 3], 0, 1, 0);
+      tree->render(time);
+      leaves->render(time);
+      glPopMatrix();
+    }
 
     glScaled(0.1, 0.3, 0.1);
     glTranslated(-256, 0, -256);
@@ -151,7 +167,7 @@ public:
     glLoadIdentity();
     glOrtho (-aspectratio_w, aspectratio_w,
 	     -aspectratio_h, aspectratio_h,
-	     -20, 20);
+	     -20, 120);
 
     glMatrixMode(GL_MODELVIEW);    
     glLoadIdentity();
@@ -195,7 +211,11 @@ void load() {
     error("Vertex buffer objects are required but not supported by OpenGL implementation");
     exit(1);
   }
-
+  /*
+  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  */
   scene = new Scene();
 
   texture = new GLuint[texture_count];
@@ -215,10 +235,10 @@ void load() {
     //		    GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
     //glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 512, 512, 0,
     //		 GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    logGL();
+    //logGL();
     glTexImage2D(GL_TEXTURE_2D, 0, texture_format[i], 1280, 720, 0,
 		 texture_format[i], GL_UNSIGNED_BYTE, 0);
-    logGL();
+    //logGL();
   }
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -229,7 +249,7 @@ void load() {
 			 GL_TEXTURE_2D, texture[0], 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
   			 GL_TEXTURE_2D, texture[1], 0);
-  logGL();
+  //logGL();
 
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   if(status != GL_FRAMEBUFFER_COMPLETE) {
@@ -280,47 +300,6 @@ void render(double time) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   scene->render(time);
-  logErrors();
-  /*
-  glPushMatrix();
-
-  //glRotatef (time * ALPHA, 1, 0, 1);
-  glScalef(0.3, 0.3, 0.3);
-  // glRotatef (ang, 0, 1, 0);
-  // glRotatef (ang, 0, 0, 1);
-
-  glShadeModel(GL_FLAT);
-  glEnable(GL_DEPTH_TEST);
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_LIGHTING);
-  glUseProgram(0);
-
-  glBegin (GL_LINES);
-  glColor3f (1., 0., 0.);
-  glVertex3f (0., 0., 0.);
-  glVertex3f (1., 0., 0.);
-  glEnd ();
-	
-  glBegin (GL_LINES);
-  glColor3f (0., 1., 0.);
-  glVertex3f (0., 0., 0.);
-  glVertex3f (0., 1., 0.);
-  glEnd ();
-	
-  glBegin (GL_LINES);
-  glColor3f (0., 0., 1.);
-  glVertex3f (0., 0., 0.);
-  glVertex3f (0., 0., 1.);
-  glEnd ();
-
-  glPopMatrix ();
-  */
-  /*
-  prev->texture = texture[0];
-  prev->scale = 0.25;
-  prev->size = 1.0;
-  prev->render(time);
-  */
   logErrors();
 }
 
